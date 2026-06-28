@@ -18,12 +18,14 @@ import {
   X,
   ChevronRight,
 } from "lucide-react";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { cn } from "@/lib/utils";
 import { useAuthStore } from "@/lib/store/auth-store";
+import { useNotificationStore } from "@/lib/store/notification-store";
 import { APP_NAME } from "@/lib/constants";
 import type { UserRole } from "@/lib/types";
-import { mockNotifications } from "@/lib/mock-data";
+import { apiClient } from "@/lib/api-client";
+import { mapNotifications } from "@/lib/mappers";
 
 interface NavItem {
   label: string;
@@ -59,11 +61,15 @@ export function DashboardShell({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
   const { user, logout } = useAuthStore();
   const [sidebarOpen, setSidebarOpen] = useState(false);
+  const unreadCount = useNotificationStore((state) => state.unreadCount);
+  const refreshUnreadCount = useNotificationStore((state) => state.refreshUnreadCount);
+
+  useEffect(() => {
+    if (user?.role !== "citizen") return;
+    refreshUnreadCount();
+  }, [user, refreshUnreadCount]);
 
   const navItems = user ? navByRole[user.role] : [];
-  const unreadCount = mockNotifications.filter(
-    (n) => n.userId === user?.id && !n.read
-  ).length;
 
   const dashboardHome =
     user?.role === "admin"

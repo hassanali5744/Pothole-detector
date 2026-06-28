@@ -8,7 +8,7 @@ Intelligent Road Damage Detection & Reporting Platform — AI-powered web app fo
 |----------|-------------------|
 | Frontend | Next.js 16, React 19, Tailwind CSS 4 |
 | Backend  | FastAPI (Python)  |
-| Database | MongoDB (planned) |
+| Database | MongoDB           |
 
 ## Project Structure
 
@@ -30,6 +30,11 @@ npm run dev
 
 Open [http://localhost:3000](http://localhost:3000)
 
+Create `frontend/.env.local`:
+```
+NEXT_PUBLIC_API_URL=http://localhost:8000
+```
+
 **Demo accounts:**
 
 | Role      | Email                    |
@@ -38,17 +43,28 @@ Open [http://localhost:3000](http://localhost:3000)
 | Inspector | inspector@roadvision.ai  |
 | Admin     | admin@roadvision.ai      |
 
-### Backend
+### Backend + MongoDB
+
+1. **Start MongoDB** (pick one):
+   - Docker: `docker compose up -d mongodb`
+   - Or install [MongoDB Community](https://www.mongodb.com/try/download/community) locally
+
+2. **Configure & run API:**
 
 ```bash
 cd backend
 python -m venv venv
 venv\Scripts\activate        # Windows
-pip install fastapi uvicorn
+pip install -r requirements.txt
+copy .env.example .env       # or use the included .env
 uvicorn main:app --reload
 ```
 
-API runs at [http://localhost:8000](http://localhost:8000)
+API: [http://localhost:8000](http://localhost:8000)  
+Health check: [http://localhost:8000/api/health](http://localhost:8000/api/health)  
+API docs: [http://localhost:8000/docs](http://localhost:8000/docs)
+
+Demo password for all accounts: `demo123`
 
 ## Features
 

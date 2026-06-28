@@ -18,16 +18,22 @@ export default function RegisterPage() {
   const [password, setPassword] = useState("");
   const [role, setRole] = useState<UserRole>("citizen");
   const [loading, setLoading] = useState(false);
+  const [error, setError] = useState("");
   const { register } = useAuthStore();
   const router = useRouter();
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    setError("");
     setLoading(true);
-    await register(name, email, password, role);
-    const redirect =
-      role === "admin" ? "/admin" : role === "inspector" ? "/inspector" : "/citizen";
-    router.push(redirect);
+    const success = await register(name, email, password, role);
+    if (success) {
+      const redirect =
+        role === "admin" ? "/admin" : role === "inspector" ? "/inspector" : "/citizen";
+      router.push(redirect);
+    } else {
+      setError("Registration failed. Email might already be registered.");
+    }
     setLoading(false);
   };
 
@@ -81,6 +87,11 @@ export default function RegisterPage() {
               { value: "admin", label: "Administrator" },
             ]}
           />
+          {error && (
+            <p className="rounded-xl bg-danger-soft px-3 py-2.5 text-sm font-medium text-danger">
+              {error}
+            </p>
+          )}
           <Button type="submit" className="w-full" disabled={loading}>
             {loading ? "Creating account..." : "Create Account"}
           </Button>

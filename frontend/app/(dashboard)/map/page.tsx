@@ -1,17 +1,35 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
+import { Loader2 } from "lucide-react";
 import { RoleGuard } from "@/components/layout/auth-guard";
 import { PageHeader } from "@/components/ui/page-header";
 import { DamageMap } from "@/components/map/damage-map";
 import { Select } from "@/components/ui/select";
-import { mockReports } from "@/lib/mock-data";
-import type { DamageType, ReportStatus } from "@/lib/types";
+import { apiClient } from "@/lib/api-client";
+import { mapReports } from "@/lib/mappers";
+import type { DamageType, ReportStatus, DamageReport } from "@/lib/types";
 import { DAMAGE_TYPE_LABELS, STATUS_LABELS } from "@/lib/constants";
 
 export default function MapPage() {
   const [filterType, setFilterType] = useState<DamageType | "all">("all");
   const [filterStatus, setFilterStatus] = useState<ReportStatus | "all">("all");
+  const [reports, setReports] = useState<DamageReport[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    async function load() {
+      try {
+        const data = await apiClient.get("/api/reports");
+        setReports(mapReports(data as Record<string, unknown>[]));
+      } catch (e) {
+        console.error(e);
+      } finally {
+        setLoading(false);
+      }
+    }
+    load();
+  }, []);
 
   return (
     <RoleGuard allowedRoles={["citizen", "inspector", "admin"]}>
@@ -50,21 +68,24 @@ export default function MapPage() {
             { color: "#9b2c2c", label: "Critical" },
           ].map((item) => (
             <div key={item.label} className="flex items-center gap-2">
-              <div
-                className="h-3 w-3 rounded-full ring-2 ring-white"
-                style={{ backgroundColor: item.color }}
-              />
+              <div className="h-3 w-3 rounded-full ring-2 ring-white" style={{ backgroundColor: item.color }} />
               <span className="font-medium text-ink-secondary">{item.label} Severity</span>
             </div>
           ))}
         </div>
 
-        <DamageMap
-          reports={mockReports}
-          height="600px"
-          filterType={filterType}
-          filterStatus={filterStatus}
-        />
+        {loading ? (
+          <div className="flex h-[600px] items-center justify-center rounded-xl border border-line">
+            <Loader2 className="h-8 w-8 animate-spin text-accent-600" />
+          </div>
+        ) : (
+          <DamageMap
+            reports={reports}
+            height="600px"
+            filterType={filterType}
+            filterStatus={filterStatus}
+          />
+        )}
       </div>
     </RoleGuard>
   );

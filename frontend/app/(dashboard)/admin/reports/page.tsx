@@ -1,25 +1,39 @@
 "use client";
 
-import { useState } from "react";
-import { Download } from "lucide-react";
+import { useEffect, useState } from "react";
+import { Download, Loader2 } from "lucide-react";
 import { RoleGuard } from "@/components/layout/auth-guard";
 import { PageHeader } from "@/components/ui/page-header";
 import { ReportCard } from "@/components/reports/report-card";
 import { Button } from "@/components/ui/button";
 import { Select } from "@/components/ui/select";
-import { mockReports } from "@/lib/mock-data";
-import type { ReportStatus, DamageType } from "@/lib/types";
+import { apiClient } from "@/lib/api-client";
+import { mapReports } from "@/lib/mappers";
+import type { ReportStatus, DamageType, DamageReport } from "@/lib/types";
 import { STATUS_LABELS, DAMAGE_TYPE_LABELS } from "@/lib/constants";
 
 export default function AdminReportsPage() {
   const [statusFilter, setStatusFilter] = useState<ReportStatus | "all">("all");
   const [typeFilter, setTypeFilter] = useState<DamageType | "all">("all");
+  const [reports, setReports] = useState<DamageReport[]>([]);
+  const [loading, setLoading] = useState(true);
 
-  const filtered = mockReports.filter((r) => {
-    if (statusFilter !== "all" && r.status !== statusFilter) return false;
-    if (typeFilter !== "all" && r.damageType !== typeFilter) return false;
-    return true;
-  });
+  useEffect(() => {
+    async function load() {
+      setLoading(true);
+      try {
+        const data = await apiClient.get("/api/reports", {
+          params: { status: statusFilter, damageType: typeFilter },
+        });
+        setReports(mapReports(data as Record<string, unknown>[]));
+      } catch (e) {
+        console.error(e);
+      } finally {
+        setLoading(false);
+      }
+    }
+    load();
+  }, [statusFilter, typeFilter]);
 
   return (
     <RoleGuard allowedRoles={["admin"]}>
@@ -55,11 +69,17 @@ export default function AdminReportsPage() {
           />
         </div>
 
-        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-          {filtered.map((report) => (
-            <ReportCard key={report.id} report={report} showUser />
-          ))}
-        </div>
+        {loading ? (
+          <div className="flex h-64 items-center justify-center">
+            <Loader2 className="h-8 w-8 animate-spin text-accent-600" />
+          </div>
+        ) : (
+          <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+            {reports.map((report) => (
+              <ReportCard key={report.id} report={report} showUser />
+            ))}
+          </div>
+        )}
       </div>
     </RoleGuard>
   );

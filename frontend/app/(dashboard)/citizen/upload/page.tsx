@@ -12,6 +12,7 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/com
 import { SeverityBadge } from "@/components/ui/badge";
 import { DAMAGE_TYPE_LABELS } from "@/lib/constants";
 import type { DamageType, SeverityLevel } from "@/lib/types";
+import { apiClient } from "@/lib/api-client";
 
 interface AIResult {
   damageType: DamageType;
@@ -39,6 +40,8 @@ export default function UploadPage() {
   const [aiResults, setAiResults] = useState<AIResult[] | null>(null);
   const [submitted, setSubmitted] = useState(false);
   const [dragOver, setDragOver] = useState(false);
+  const [submitting, setSubmitting] = useState(false);
+  const [error, setError] = useState("");
 
   const handleFile = useCallback((f: File) => {
     setFile(f);
@@ -63,13 +66,51 @@ export default function UploadPage() {
   const analyze = async () => {
     if (!file) return;
     setAnalyzing(true);
-    await new Promise((r) => setTimeout(r, 2000));
-    setAiResults(mockAIResults);
-    setAnalyzing(false);
+    setError("");
+    try {
+      const formData = new FormData();
+      formData.append("file", file);
+      const data = await apiClient.postForm("/api/ai/analyze", formData);
+      const detections = (data as { detections: AIResult[] }).detections;
+      setAiResults(detections);
+    } catch (err: unknown) {
+      const message = err instanceof Error ? err.message : "AI analysis failed";
+      setError(message);
+      setAiResults(mockAIResults);
+    } finally {
+      setAnalyzing(false);
+    }
   };
 
   const submit = async () => {
-    setSubmitted(true);
+    if (!file || !aiResults || aiResults.length === 0) return;
+    setSubmitting(true);
+    setError("");
+
+    try {
+      const formData = new FormData();
+      formData.append("file", file);
+      formData.append("address", address);
+      formData.append("city", city);
+      // Default coordinates for New Delhi
+      formData.append("latitude", "28.6139");
+      formData.append("longitude", "77.209");
+      
+      const mainResult = aiResults[0];
+      formData.append("damageType", mainResult.damageType);
+      formData.append("severity", mainResult.severity);
+      formData.append("aiConfidence", mainResult.confidence.toString());
+      formData.append("aiDetections", JSON.stringify(aiResults));
+      formData.append("aiExplanation", mainResult.explanation);
+
+      await apiClient.postForm("/api/reports", formData);
+      setSubmitted(true);
+    } catch (err: any) {
+      console.error("Error submitting report:", err);
+      setError(err.message || "Failed to submit report. Please try again.");
+    } finally {
+      setSubmitting(false);
+    }
   };
 
   if (submitted) {
@@ -213,6 +254,12 @@ export default function UploadPage() {
           </Card>
         )}
 
+        {error && (
+          <p className="rounded-xl bg-danger-soft px-3 py-2.5 text-sm font-medium text-danger">
+            {error}
+          </p>
+        )}
+
         <div className="flex gap-3">
           {file && !aiResults && (
             <Button onClick={analyze} disabled={analyzing || !address}>
@@ -220,7 +267,9 @@ export default function UploadPage() {
             </Button>
           )}
           {aiResults && (
-            <Button onClick={submit}>Submit Report</Button>
+            <Button onClick={submit} disabled={submitting}>
+              {submitting ? "Submitting..." : "Submit Report"}
+            </Button>
           )}
         </div>
       </div>

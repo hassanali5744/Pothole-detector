@@ -1,30 +1,66 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import Image from "next/image";
-import { Brain, MapPin, Check, X } from "lucide-react";
+import { Brain, MapPin, Check, X, Loader2 } from "lucide-react";
 import { RoleGuard } from "@/components/layout/auth-guard";
 import { PageHeader } from "@/components/ui/page-header";
 import { Button } from "@/components/ui/button";
 import { Select } from "@/components/ui/select";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { SeverityBadge, StatusBadge } from "@/components/ui/badge";
-import { mockReports } from "@/lib/mock-data";
 import { DAMAGE_TYPE_LABELS } from "@/lib/constants";
 import { formatDate } from "@/lib/utils";
-import type { SeverityLevel } from "@/lib/types";
+import { apiClient } from "@/lib/api-client";
+import { mapReports } from "@/lib/mappers";
+import { updateReport } from "@/lib/api/reports";
+import type { DamageReport, SeverityLevel } from "@/lib/types";
 
 export default function PendingReportsPage() {
-  const pending = mockReports.filter((r) => r.status === "reported");
-  const [selected, setSelected] = useState(pending[0]?.id ?? "");
+  const [pending, setPending] = useState<DamageReport[]>([]);
+  const [selected, setSelected] = useState("");
   const [severity, setSeverity] = useState<SeverityLevel>("medium");
   const [actionTaken, setActionTaken] = useState<string | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [acting, setActing] = useState(false);
+
+  useEffect(() => {
+    async function load() {
+      try {
+        const data = await apiClient.get("/api/reports", { params: { status: "reported" } });
+        const list = mapReports(data as Record<string, unknown>[]);
+        setPending(list);
+        if (list.length > 0) {
+          setSelected(list[0].id);
+          setSeverity(list[0].severity);
+        }
+      } catch (e) {
+        console.error(e);
+      } finally {
+        setLoading(false);
+      }
+    }
+    load();
+  }, []);
 
   const report = pending.find((r) => r.id === selected);
 
-  const handleAction = (action: "verify" | "reject") => {
-    setActionTaken(action);
-    setTimeout(() => setActionTaken(null), 3000);
+  const handleAction = async (action: "verify" | "reject") => {
+    if (!report) return;
+    setActing(true);
+    try {
+      await updateReport(report.id, {
+        status: action === "verify" ? "verified" : "rejected",
+        severity,
+      });
+      setPending((prev) => prev.filter((r) => r.id !== report.id));
+      setActionTaken(action);
+      setTimeout(() => setActionTaken(null), 3000);
+    } catch (e) {
+      console.error(e);
+    } finally {
+      setActing(false);
+    }
   };
 
   return (
@@ -35,7 +71,11 @@ export default function PendingReportsPage() {
           description="Review and verify AI-detected road damage reports."
         />
 
-        {pending.length === 0 ? (
+        {loading ? (
+          <div className="flex h-32 items-center justify-center">
+            <Loader2 className="h-8 w-8 animate-spin text-accent-600" />
+          </div>
+        ) : pending.length === 0 ? (
           <div className="rounded-xl border border-dashed border-line-strong py-16 text-center">
             <p className="text-muted">No pending reports to review.</p>
           </div>
@@ -65,12 +105,7 @@ export default function PendingReportsPage() {
               <div className="space-y-4 lg:col-span-2">
                 <Card>
                   <div className="relative h-64 w-full">
-                    <Image
-                      src={report.imageUrl}
-                      alt="Report"
-                      fill
-                      className="rounded-t-xl object-cover"
-                    />
+                    <Image src={report.imageUrl} alt="Report" fill className="rounded-t-xl object-cover" unoptimized />
                   </div>
                   <CardContent className="p-6">
                     <div className="flex flex-wrap items-center gap-2">
@@ -130,11 +165,11 @@ export default function PendingReportsPage() {
                       ]}
                     />
                     <div className="mt-4 flex gap-3">
-                      <Button onClick={() => handleAction("verify")}>
+                      <Button onClick={() => handleAction("verify")} disabled={acting}>
                         <Check className="h-4 w-4" />
-                        Verify Report
+                        {acting ? "Processing..." : "Verify Report"}
                       </Button>
-                      <Button variant="danger" onClick={() => handleAction("reject")}>
+                      <Button variant="danger" onClick={() => handleAction("reject")} disabled={acting}>
                         <X className="h-4 w-4" />
                         Reject
                       </Button>

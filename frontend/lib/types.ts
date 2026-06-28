@@ -57,6 +57,7 @@ export interface DamageReport {
   updatedAt: string;
   assignedTo?: string;
   notes?: string;
+  scheduledDate?: string;
 }
 
 export interface Notification {
