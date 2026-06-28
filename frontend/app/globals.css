@@ -2,34 +2,188 @@
 @import "leaflet/dist/leaflet.css";
 
 :root {
-  --background: #f8fafc;
-  --foreground: #0f172a;
-  --brand-50: #eff6ff;
-  --brand-100: #dbeafe;
-  --brand-500: #3b82f6;
-  --brand-600: #2563eb;
-  --brand-700: #1d4ed8;
+  /* Surfaces */
+  --background: #f7f3eb;
+  --foreground: #1c1814;
+  --surface: #fffcf7;
+  --surface-muted: #efe8dc;
+  --line: #ddd4c6;
+  --line-strong: #c9bba8;
+
+  /* Ink */
+  --ink: #1c1814;
+  --ink-secondary: #4a433c;
+  --muted: #7a7268;
+
+  /* Brand — deep civic navy */
+  --brand-50: #eef2f7;
+  --brand-100: #d5dfea;
+  --brand-200: #a8bdd4;
+  --brand-500: #2c5282;
+  --brand-600: #1e3a5f;
+  --brand-700: #152a45;
+  --brand-800: #0c1929;
+  --brand-900: #071018;
+
+  /* Accent — warm copper / amber */
+  --accent-50: #fdf6ec;
+  --accent-100: #f5e6cc;
+  --accent-200: #e8c99a;
+  --accent-500: #b87333;
+  --accent-600: #9a5f28;
+  --accent-700: #7c4b1f;
+
+  /* Semantic */
+  --success: #2f5d47;
+  --success-soft: #e8f2ec;
+  --danger: #9b2c2c;
+  --danger-soft: #fceaea;
+
+  /* Shadows */
+  --shadow-soft: 0 1px 2px rgba(28, 24, 20, 0.04), 0 4px 16px rgba(28, 24, 20, 0.06);
+  --shadow-card: 0 1px 3px rgba(28, 24, 20, 0.05), 0 8px 24px rgba(28, 24, 20, 0.07);
+  --shadow-elevated: 0 4px 6px rgba(28, 24, 20, 0.05), 0 16px 40px rgba(28, 24, 20, 0.1);
+
+  /* Radius */
+  --radius-sm: 0.5rem;
+  --radius-md: 0.75rem;
+  --radius-lg: 1rem;
+  --radius-xl: 1.25rem;
 }
 
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
+  --color-surface: var(--surface);
+  --color-surface-muted: var(--surface-muted);
+  --color-line: var(--line);
+  --color-line-strong: var(--line-strong);
+  --color-ink: var(--ink);
+  --color-ink-secondary: var(--ink-secondary);
+  --color-muted: var(--muted);
   --color-brand-50: var(--brand-50);
   --color-brand-100: var(--brand-100);
+  --color-brand-200: var(--brand-200);
   --color-brand-500: var(--brand-500);
   --color-brand-600: var(--brand-600);
   --color-brand-700: var(--brand-700);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
+  --color-brand-800: var(--brand-800);
+  --color-brand-900: var(--brand-900);
+  --color-accent-50: var(--accent-50);
+  --color-accent-100: var(--accent-100);
+  --color-accent-200: var(--accent-200);
+  --color-accent-500: var(--accent-500);
+  --color-accent-600: var(--accent-600);
+  --color-accent-700: var(--accent-700);
+  --color-success: var(--success);
+  --color-success-soft: var(--success-soft);
+  --color-danger: var(--danger);
+  --color-danger-soft: var(--danger-soft);
+  --font-display: var(--font-fraunces);
+  --font-sans: var(--font-source-sans);
+}
+
+* {
+  border-color: var(--line);
+}
+
+html {
+  scroll-behavior: smooth;
 }
 
 body {
   background: var(--background);
   color: var(--foreground);
-  font-family: var(--font-geist-sans), system-ui, sans-serif;
+  font-family: var(--font-source-sans), system-ui, sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+h1,
+h2,
+h3,
+h4 {
+  font-family: var(--font-fraunces), Georgia, serif;
+  font-weight: 600;
+  letter-spacing: -0.02em;
+}
+
+.font-display {
+  font-family: var(--font-fraunces), Georgia, serif;
+}
+
+/* Reusable patterns */
+.surface-card {
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-soft);
+}
+
+.surface-card-hover {
+  transition: box-shadow 0.2s ease, border-color 0.2s ease, transform 0.2s ease;
+}
+
+.surface-card-hover:hover {
+  box-shadow: var(--shadow-card);
+  border-color: var(--line-strong);
+}
+
+.eyebrow {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: 0.75rem;
+  font-weight: 600;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--accent-600);
+}
+
+.section-heading {
+  font-family: var(--font-fraunces), Georgia, serif;
+  font-size: clamp(1.875rem, 4vw, 2.5rem);
+  font-weight: 600;
+  line-height: 1.15;
+  color: var(--ink);
+  letter-spacing: -0.02em;
+}
+
+.section-subheading {
+  margin-top: 1rem;
+  max-width: 42rem;
+  font-size: 1.0625rem;
+  line-height: 1.7;
+  color: var(--muted);
+}
+
+.hero-pattern {
+  background-color: var(--brand-800);
+  background-image:
+    radial-gradient(circle at 20% 20%, rgba(184, 115, 51, 0.12) 0%, transparent 45%),
+    radial-gradient(circle at 80% 80%, rgba(44, 82, 130, 0.2) 0%, transparent 45%),
+    linear-gradient(135deg, var(--brand-900) 0%, var(--brand-800) 50%, var(--brand-700) 100%);
+}
+
+.auth-pattern {
+  background-color: var(--background);
+  background-image:
+    radial-gradient(circle at 0% 0%, rgba(184, 115, 51, 0.08) 0%, transparent 50%),
+    radial-gradient(circle at 100% 100%, rgba(30, 58, 95, 0.06) 0%, transparent 50%);
 }
 
 .leaflet-container {
   z-index: 0;
   font-family: inherit;
+  border-radius: var(--radius-lg);
+}
+
+/* Focus ring utility */
+.focus-ring {
+  outline: none;
+}
+
+.focus-ring:focus-visible {
+  outline: 2px solid var(--accent-500);
+  outline-offset: 2px;
 }

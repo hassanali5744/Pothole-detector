@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { RoleGuard } from "@/components/layout/auth-guard";
+import { PageHeader } from "@/components/ui/page-header";
 import { DamageMap } from "@/components/map/damage-map";
 import { Select } from "@/components/ui/select";
 import { mockReports } from "@/lib/mock-data";
@@ -15,14 +16,12 @@ export default function MapPage() {
   return (
     <RoleGuard allowedRoles={["citizen", "inspector", "admin"]}>
       <div className="space-y-6">
-        <div>
-          <h1 className="text-2xl font-bold text-slate-900">Damage Map</h1>
-          <p className="text-slate-500">
-            Interactive map showing road damage locations, repair sites, and high-risk areas.
-          </p>
-        </div>
+        <PageHeader
+          title="Damage Map"
+          description="Interactive map showing road damage locations, repair sites, and high-risk areas."
+        />
 
-        <div className="flex flex-wrap gap-4">
+        <div className="flex flex-wrap gap-4 rounded-xl border border-line bg-surface p-4">
           <Select
             id="type"
             value={filterType}
@@ -43,20 +42,19 @@ export default function MapPage() {
           />
         </div>
 
-        {/* Legend */}
-        <div className="flex flex-wrap gap-4 text-xs">
+        <div className="flex flex-wrap gap-5 rounded-xl border border-line bg-surface-muted/50 px-4 py-3 text-xs">
           {[
-            { color: "#64748b", label: "Low" },
-            { color: "#eab308", label: "Medium" },
-            { color: "#f97316", label: "High" },
-            { color: "#ef4444", label: "Critical" },
+            { color: "#7a7268", label: "Low" },
+            { color: "#b87333", label: "Medium" },
+            { color: "#c17f3a", label: "High" },
+            { color: "#9b2c2c", label: "Critical" },
           ].map((item) => (
-            <div key={item.label} className="flex items-center gap-1.5">
+            <div key={item.label} className="flex items-center gap-2">
               <div
-                className="h-3 w-3 rounded-full"
+                className="h-3 w-3 rounded-full ring-2 ring-white"
                 style={{ backgroundColor: item.color }}
               />
-              <span className="text-slate-600">{item.label} Severity</span>
+              <span className="font-medium text-ink-secondary">{item.label} Severity</span>
             </div>
           ))}
         </div>

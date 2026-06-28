@@ -4,6 +4,7 @@ import { useState, useCallback } from "react";
 import Image from "next/image";
 import { Upload, MapPin, Brain, CheckCircle, X, ImageIcon } from "lucide-react";
 import { RoleGuard } from "@/components/layout/auth-guard";
+import { PageHeader } from "@/components/ui/page-header";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Select } from "@/components/ui/select";
@@ -75,11 +76,11 @@ export default function UploadPage() {
     return (
       <RoleGuard allowedRoles={["citizen"]}>
         <div className="mx-auto max-w-lg py-12 text-center">
-          <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-emerald-100">
-            <CheckCircle className="h-8 w-8 text-emerald-600" />
+          <div className="mx-auto mb-5 flex h-16 w-16 items-center justify-center rounded-full bg-success-soft">
+            <CheckCircle className="h-8 w-8 text-success" />
           </div>
-          <h1 className="text-2xl font-bold text-slate-900">Report Submitted!</h1>
-          <p className="mt-2 text-slate-500">
+          <h1 className="font-display text-2xl font-semibold text-ink">Report Submitted!</h1>
+          <p className="mt-2 text-muted">
             Your road damage report has been submitted and is pending inspector review.
           </p>
           <Button className="mt-6" onClick={() => { setSubmitted(false); setFile(null); setPreview(null); setAiResults(null); }}>
@@ -93,12 +94,10 @@ export default function UploadPage() {
   return (
     <RoleGuard allowedRoles={["citizen"]}>
       <div className="mx-auto max-w-3xl space-y-6">
-        <div>
-          <h1 className="text-2xl font-bold text-slate-900">Report Road Damage</h1>
-          <p className="text-slate-500">
-            Upload an image or video of the road damage. Our AI will analyze it automatically.
-          </p>
-        </div>
+        <PageHeader
+          title="Report Road Damage"
+          description="Upload an image or video of the road damage. Our AI will analyze it automatically."
+        />
 
         {/* Upload zone */}
         <Card>
@@ -108,7 +107,7 @@ export default function UploadPage() {
               onDragLeave={() => setDragOver(false)}
               onDrop={onDrop}
               className={`flex flex-col items-center justify-center rounded-xl border-2 border-dashed p-12 transition-colors ${
-                dragOver ? "border-brand-500 bg-brand-50" : "border-slate-300 bg-slate-50"
+                dragOver ? "border-accent-500 bg-accent-50/50" : "border-line bg-surface-muted/40"
               }`}
             >
               {preview ? (
@@ -122,21 +121,21 @@ export default function UploadPage() {
                   )}
                   <button
                     onClick={() => { setFile(null); setPreview(null); setAiResults(null); }}
-                    className="absolute -right-2 -top-2 rounded-full bg-red-500 p-1 text-white"
+                    className="absolute -right-2 -top-2 rounded-full bg-danger p-1 text-white shadow-sm"
                   >
                     <X className="h-4 w-4" />
                   </button>
                 </div>
               ) : (
                 <>
-                  <div className="mb-4 rounded-full bg-brand-100 p-4">
-                    <ImageIcon className="h-8 w-8 text-brand-600" />
+                  <div className="mb-4 rounded-full bg-accent-50 p-4 ring-1 ring-accent-100">
+                    <ImageIcon className="h-8 w-8 text-accent-600" />
                   </div>
-                  <p className="text-sm font-medium text-slate-700">
+                  <p className="text-sm font-semibold text-ink-secondary">
                     Drag & drop your image or video here
                   </p>
-                  <p className="mt-1 text-xs text-slate-400">PNG, JPG, MP4 up to 50MB</p>
-                  <label className="mt-4 inline-flex cursor-pointer items-center gap-2 rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm font-medium text-slate-700 hover:bg-slate-50">
+                  <p className="mt-1 text-xs text-muted">PNG, JPG, MP4 up to 50MB</p>
+                  <label className="mt-4 inline-flex cursor-pointer items-center gap-2 rounded-xl border border-line bg-surface px-4 py-2.5 text-sm font-semibold text-ink-secondary transition-colors hover:border-line-strong hover:bg-surface-muted">
                     <Upload className="h-4 w-4" />
                     Browse Files
                     <input
@@ -197,15 +196,15 @@ export default function UploadPage() {
             </CardHeader>
             <CardContent className="space-y-4">
               {aiResults.map((result, i) => (
-                <div key={i} className="rounded-lg border border-slate-200 p-4">
+                <div key={i} className="rounded-xl border border-line bg-surface-muted/40 p-4">
                   <div className="flex items-center justify-between">
-                    <h4 className="font-medium text-slate-900">
+                    <h4 className="font-display font-semibold text-ink">
                       {DAMAGE_TYPE_LABELS[result.damageType]}
                     </h4>
                     <SeverityBadge severity={result.severity} />
                   </div>
-                  <p className="mt-2 text-sm text-slate-500">{result.explanation}</p>
-                  <p className="mt-2 text-xs text-brand-600">
+                  <p className="mt-2 text-sm leading-relaxed text-muted">{result.explanation}</p>
+                  <p className="mt-2 text-xs font-semibold text-accent-600">
                     Confidence: {(result.confidence * 100).toFixed(1)}%
                   </p>
                 </div>

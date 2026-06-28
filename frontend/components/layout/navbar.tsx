@@ -10,25 +10,34 @@ export function Navbar() {
   const [mobileOpen, setMobileOpen] = useState(false);
 
   return (
-    <header className="sticky top-0 z-50 border-b border-slate-200/80 bg-white/90 backdrop-blur-md">
-      <div className="mx-auto flex h-16 max-w-7xl items-center justify-between px-4 sm:px-6 lg:px-8">
-        <Link href="/" className="flex items-center gap-2">
-          <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-brand-600">
-            <Map className="h-4 w-4 text-white" />
+    <header className="sticky top-0 z-50 border-b border-line/80 bg-surface/95 backdrop-blur-md">
+      <div className="mx-auto flex h-[4.25rem] max-w-7xl items-center justify-between px-4 sm:px-6 lg:px-8">
+        <Link href="/" className="group flex items-center gap-3">
+          <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-[#0c1929] shadow-[0_2px_8px_rgba(12,25,41,0.25)] ring-1 ring-[#152a45]/50 transition-transform group-hover:scale-105">
+            <Map className="h-4 w-4 text-[#e8c99a]" />
           </div>
-          <span className="text-lg font-bold text-slate-900">{APP_NAME}</span>
+          <div>
+            <span className="font-display text-lg font-semibold text-ink">{APP_NAME}</span>
+            <span className="hidden text-[10px] font-semibold uppercase tracking-[0.15em] text-[#9a5f28] sm:block">
+              Road Intelligence
+            </span>
+          </div>
         </Link>
 
-        <nav className="hidden items-center gap-8 md:flex">
-          <Link href="#features" className="text-sm text-slate-600 hover:text-slate-900">
-            Features
-          </Link>
-          <Link href="#how-it-works" className="text-sm text-slate-600 hover:text-slate-900">
-            How It Works
-          </Link>
-          <Link href="#roles" className="text-sm text-slate-600 hover:text-slate-900">
-            For Everyone
-          </Link>
+        <nav className="hidden items-center gap-10 md:flex">
+          {[
+            { href: "#features", label: "Features" },
+            { href: "#how-it-works", label: "How It Works" },
+            { href: "#roles", label: "For Everyone" },
+          ].map((link) => (
+            <Link
+              key={link.href}
+              href={link.href}
+              className="text-sm font-medium text-muted transition-colors hover:text-ink"
+            >
+              {link.label}
+            </Link>
+          ))}
         </nav>
 
         <div className="hidden items-center gap-3 md:flex">
@@ -43,24 +52,21 @@ export function Navbar() {
         </div>
 
         <button
-          className="md:hidden"
+          className="rounded-lg p-2 text-muted transition-colors hover:bg-surface-muted hover:text-ink md:hidden"
           onClick={() => setMobileOpen(!mobileOpen)}
+          aria-label="Toggle menu"
         >
-          {mobileOpen ? (
-            <X className="h-5 w-5 text-slate-600" />
-          ) : (
-            <Menu className="h-5 w-5 text-slate-600" />
-          )}
+          {mobileOpen ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
         </button>
       </div>
 
       {mobileOpen && (
-        <div className="border-t border-slate-200 bg-white px-4 py-4 md:hidden">
+        <div className="border-t border-line bg-surface px-4 py-4 md:hidden">
           <nav className="flex flex-col gap-3">
-            <Link href="#features" className="text-sm text-slate-600" onClick={() => setMobileOpen(false)}>
+            <Link href="#features" className="py-1 text-sm font-medium text-muted" onClick={() => setMobileOpen(false)}>
               Features
             </Link>
-            <Link href="#how-it-works" className="text-sm text-slate-600" onClick={() => setMobileOpen(false)}>
+            <Link href="#how-it-works" className="py-1 text-sm font-medium text-muted" onClick={() => setMobileOpen(false)}>
               How It Works
             </Link>
             <Link href="/login" onClick={() => setMobileOpen(false)}>

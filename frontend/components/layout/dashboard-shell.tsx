@@ -73,36 +73,44 @@ export function DashboardShell({ children }: { children: React.ReactNode }) {
         : "/citizen";
 
   return (
-    <div className="flex min-h-screen bg-slate-50">
-      {/* Mobile overlay */}
+    <div className="flex min-h-screen bg-background">
       {sidebarOpen && (
         <div
-          className="fixed inset-0 z-40 bg-black/50 lg:hidden"
+          className="fixed inset-0 z-40 bg-brand-900/40 backdrop-blur-sm lg:hidden"
           onClick={() => setSidebarOpen(false)}
         />
       )}
 
-      {/* Sidebar */}
       <aside
         className={cn(
-          "fixed inset-y-0 left-0 z-50 flex w-64 flex-col border-r border-slate-200 bg-white transition-transform lg:static lg:translate-x-0",
+          "fixed inset-y-0 left-0 z-50 flex w-[17.5rem] flex-col border-r border-line bg-surface shadow-[var(--shadow-elevated)] transition-transform lg:static lg:translate-x-0 lg:shadow-none",
           sidebarOpen ? "translate-x-0" : "-translate-x-full"
         )}
       >
-        <div className="flex h-16 items-center gap-2 border-b border-slate-200 px-6">
-          <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-brand-600">
-            <Map className="h-4 w-4 text-white" />
+        <div className="flex h-[4.25rem] items-center gap-3 border-b border-line px-5">
+          <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-brand-800 ring-1 ring-brand-700/40">
+            <Map className="h-4 w-4 text-accent-200" />
           </div>
-          <span className="font-bold text-slate-900">{APP_NAME}</span>
+          <div className="min-w-0 flex-1">
+            <span className="block truncate font-display text-base font-semibold text-ink">
+              {APP_NAME}
+            </span>
+            <span className="block truncate text-[10px] font-semibold uppercase tracking-[0.12em] text-accent-600">
+              {user?.role} portal
+            </span>
+          </div>
           <button
-            className="ml-auto lg:hidden"
+            className="rounded-lg p-1.5 text-muted hover:bg-surface-muted lg:hidden"
             onClick={() => setSidebarOpen(false)}
           >
-            <X className="h-5 w-5 text-slate-500" />
+            <X className="h-5 w-5" />
           </button>
         </div>
 
         <nav className="flex-1 space-y-1 overflow-y-auto p-4">
+          <p className="mb-2 px-3 text-[10px] font-bold uppercase tracking-[0.14em] text-muted">
+            Navigation
+          </p>
           {navItems.map((item) => {
             const isActive =
               pathname === item.href ||
@@ -113,16 +121,16 @@ export function DashboardShell({ children }: { children: React.ReactNode }) {
                 href={item.href}
                 onClick={() => setSidebarOpen(false)}
                 className={cn(
-                  "flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium transition-colors",
+                  "flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-medium transition-all duration-200",
                   isActive
-                    ? "bg-brand-50 text-brand-700"
-                    : "text-slate-600 hover:bg-slate-100 hover:text-slate-900"
+                    ? "bg-brand-800 text-white shadow-[0_2px_8px_rgba(12,25,41,0.2)]"
+                    : "text-ink-secondary hover:bg-surface-muted hover:text-ink"
                 )}
               >
-                <item.icon className="h-4 w-4 shrink-0" />
+                <item.icon className={cn("h-4 w-4 shrink-0", isActive ? "text-accent-200" : "")} />
                 {item.label}
                 {item.label === "Notifications" && unreadCount > 0 && (
-                  <span className="ml-auto flex h-5 w-5 items-center justify-center rounded-full bg-red-500 text-xs text-white">
+                  <span className="ml-auto flex h-5 min-w-5 items-center justify-center rounded-full bg-accent-500 px-1.5 text-[10px] font-bold text-white">
                     {unreadCount}
                   </span>
                 )}
@@ -131,23 +139,19 @@ export function DashboardShell({ children }: { children: React.ReactNode }) {
           })}
         </nav>
 
-        <div className="border-t border-slate-200 p-4">
-          <div className="mb-3 flex items-center gap-3 rounded-lg bg-slate-50 p-3">
-            <div className="flex h-9 w-9 items-center justify-center rounded-full bg-brand-100 text-sm font-semibold text-brand-700">
+        <div className="border-t border-line p-4">
+          <div className="mb-3 flex items-center gap-3 rounded-xl border border-line bg-surface-muted/60 p-3">
+            <div className="flex h-10 w-10 items-center justify-center rounded-full bg-brand-800 font-display text-sm font-semibold text-accent-100">
               {user?.name.charAt(0).toUpperCase()}
             </div>
             <div className="min-w-0 flex-1">
-              <p className="truncate text-sm font-medium text-slate-900">
-                {user?.name}
-              </p>
-              <p className="truncate text-xs capitalize text-slate-500">
-                {user?.role}
-              </p>
+              <p className="truncate text-sm font-semibold text-ink">{user?.name}</p>
+              <p className="truncate text-xs capitalize text-muted">{user?.role}</p>
             </div>
           </div>
           <button
             onClick={logout}
-            className="flex w-full items-center gap-2 rounded-lg px-3 py-2 text-sm font-medium text-slate-600 hover:bg-slate-100 hover:text-slate-900"
+            className="flex w-full items-center gap-2 rounded-xl px-3 py-2.5 text-sm font-medium text-muted transition-colors hover:bg-surface-muted hover:text-ink"
           >
             <LogOut className="h-4 w-4" />
             Sign out
@@ -155,24 +159,23 @@ export function DashboardShell({ children }: { children: React.ReactNode }) {
         </div>
       </aside>
 
-      {/* Main content */}
-      <div className="flex flex-1 flex-col min-w-0">
-        <header className="sticky top-0 z-30 flex h-16 items-center gap-4 border-b border-slate-200 bg-white px-4 lg:px-8">
+      <div className="flex min-w-0 flex-1 flex-col">
+        <header className="sticky top-0 z-30 flex h-[4.25rem] items-center gap-4 border-b border-line bg-surface/90 px-4 backdrop-blur-md lg:px-8">
           <button
-            className="lg:hidden"
+            className="rounded-lg p-2 text-muted hover:bg-surface-muted lg:hidden"
             onClick={() => setSidebarOpen(true)}
           >
-            <Menu className="h-5 w-5 text-slate-600" />
+            <Menu className="h-5 w-5" />
           </button>
 
-          <div className="flex items-center gap-1 text-sm text-slate-500">
-            <Link href={dashboardHome} className="hover:text-slate-700">
+          <div className="flex items-center gap-1.5 text-sm">
+            <Link href={dashboardHome} className="font-medium text-muted hover:text-ink">
               Home
             </Link>
             {pathname !== dashboardHome && (
               <>
-                <ChevronRight className="h-3 w-3" />
-                <span className="capitalize text-slate-900">
+                <ChevronRight className="h-3.5 w-3.5 text-line-strong" />
+                <span className="capitalize font-medium text-ink">
                   {pathname.split("/").pop()?.replace("-", " ")}
                 </span>
               </>

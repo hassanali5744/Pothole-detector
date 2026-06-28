@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { Download } from "lucide-react";
 import { RoleGuard } from "@/components/layout/auth-guard";
+import { PageHeader } from "@/components/ui/page-header";
 import { ReportCard } from "@/components/reports/report-card";
 import { Button } from "@/components/ui/button";
 import { Select } from "@/components/ui/select";
@@ -23,18 +24,17 @@ export default function AdminReportsPage() {
   return (
     <RoleGuard allowedRoles={["admin"]}>
       <div className="space-y-6">
-        <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-          <div>
-            <h1 className="text-2xl font-bold text-slate-900">All Reports</h1>
-            <p className="text-slate-500">Manage and export all road damage reports.</p>
-          </div>
+        <PageHeader
+          title="All Reports"
+          description="Manage and export all road damage reports."
+        >
           <Button variant="outline">
             <Download className="h-4 w-4" />
             Export CSV
           </Button>
-        </div>
+        </PageHeader>
 
-        <div className="flex flex-wrap gap-4">
+        <div className="flex flex-wrap gap-4 rounded-xl border border-line bg-surface p-4">
           <Select
             id="status"
             value={statusFilter}

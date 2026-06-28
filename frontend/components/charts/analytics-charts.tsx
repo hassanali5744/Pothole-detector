@@ -19,12 +19,19 @@ import type { AnalyticsData } from "@/lib/types";
 import { DAMAGE_TYPE_LABELS } from "@/lib/constants";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 
-const COLORS = ["#2563eb", "#7c3aed", "#db2777", "#ea580c", "#16a34a"];
-const SEVERITY_COLORS = ["#64748b", "#eab308", "#f97316", "#ef4444"];
+const COLORS = ["#1e3a5f", "#b87333", "#2f5d47", "#7c4b1f", "#2c5282"];
+const SEVERITY_COLORS = ["#7a7268", "#b87333", "#c17f3a", "#9b2c2c"];
 
 interface AnalyticsChartsProps {
   data: AnalyticsData;
 }
+
+const tooltipStyle = {
+  borderRadius: "12px",
+  border: "1px solid #ddd4c6",
+  background: "#fffcf7",
+  boxShadow: "0 4px 16px rgba(28,24,20,0.08)",
+};
 
 export function AnalyticsCharts({ data }: AnalyticsChartsProps) {
   const damageData = data.damageByType.map((d) => ({
@@ -46,11 +53,11 @@ export function AnalyticsCharts({ data }: AnalyticsChartsProps) {
         <CardContent>
           <ResponsiveContainer width="100%" height={280}>
             <BarChart data={damageData}>
-              <CartesianGrid strokeDasharray="3 3" stroke="#e2e8f0" />
-              <XAxis dataKey="name" tick={{ fontSize: 11 }} angle={-20} textAnchor="end" height={60} />
-              <YAxis tick={{ fontSize: 12 }} />
-              <Tooltip />
-              <Bar dataKey="count" fill="#2563eb" radius={[4, 4, 0, 0]} />
+              <CartesianGrid strokeDasharray="3 3" stroke="#e5ddd0" />
+              <XAxis dataKey="name" tick={{ fontSize: 11, fill: "#7a7268" }} angle={-20} textAnchor="end" height={60} />
+              <YAxis tick={{ fontSize: 12, fill: "#7a7268" }} />
+              <Tooltip contentStyle={tooltipStyle} />
+              <Bar dataKey="count" fill="#1e3a5f" radius={[6, 6, 0, 0]} />
             </BarChart>
           </ResponsiveContainer>
         </CardContent>
@@ -79,7 +86,7 @@ export function AnalyticsCharts({ data }: AnalyticsChartsProps) {
                   <Cell key={i} fill={SEVERITY_COLORS[i % SEVERITY_COLORS.length]} />
                 ))}
               </Pie>
-              <Tooltip />
+              <Tooltip contentStyle={tooltipStyle} />
             </PieChart>
           </ResponsiveContainer>
         </CardContent>
@@ -92,16 +99,16 @@ export function AnalyticsCharts({ data }: AnalyticsChartsProps) {
         <CardContent>
           <ResponsiveContainer width="100%" height={280}>
             <LineChart data={data.monthlyReports}>
-              <CartesianGrid strokeDasharray="3 3" stroke="#e2e8f0" />
-              <XAxis dataKey="month" tick={{ fontSize: 12 }} />
-              <YAxis tick={{ fontSize: 12 }} />
-              <Tooltip />
+              <CartesianGrid strokeDasharray="3 3" stroke="#e5ddd0" />
+              <XAxis dataKey="month" tick={{ fontSize: 12, fill: "#7a7268" }} />
+              <YAxis tick={{ fontSize: 12, fill: "#7a7268" }} />
+              <Tooltip contentStyle={tooltipStyle} />
               <Line
                 type="monotone"
                 dataKey="count"
-                stroke="#2563eb"
-                strokeWidth={2}
-                dot={{ fill: "#2563eb" }}
+                stroke="#b87333"
+                strokeWidth={2.5}
+                dot={{ fill: "#b87333", strokeWidth: 0, r: 4 }}
               />
             </LineChart>
           </ResponsiveContainer>
@@ -115,13 +122,13 @@ export function AnalyticsCharts({ data }: AnalyticsChartsProps) {
         <CardContent>
           <ResponsiveContainer width="100%" height={280}>
             <BarChart data={data.repairCompletion}>
-              <CartesianGrid strokeDasharray="3 3" stroke="#e2e8f0" />
-              <XAxis dataKey="month" tick={{ fontSize: 12 }} />
-              <YAxis tick={{ fontSize: 12 }} />
-              <Tooltip />
+              <CartesianGrid strokeDasharray="3 3" stroke="#e5ddd0" />
+              <XAxis dataKey="month" tick={{ fontSize: 12, fill: "#7a7268" }} />
+              <YAxis tick={{ fontSize: 12, fill: "#7a7268" }} />
+              <Tooltip contentStyle={tooltipStyle} />
               <Legend />
-              <Bar dataKey="assigned" fill="#94a3b8" name="Assigned" radius={[4, 4, 0, 0]} />
-              <Bar dataKey="completed" fill="#16a34a" name="Completed" radius={[4, 4, 0, 0]} />
+              <Bar dataKey="assigned" fill="#c9bba8" name="Assigned" radius={[6, 6, 0, 0]} />
+              <Bar dataKey="completed" fill="#2f5d47" name="Completed" radius={[6, 6, 0, 0]} />
             </BarChart>
           </ResponsiveContainer>
         </CardContent>
@@ -134,11 +141,11 @@ export function AnalyticsCharts({ data }: AnalyticsChartsProps) {
         <CardContent>
           <ResponsiveContainer width="100%" height={280}>
             <BarChart data={data.cityWiseDamage} layout="vertical">
-              <CartesianGrid strokeDasharray="3 3" stroke="#e2e8f0" />
-              <XAxis type="number" tick={{ fontSize: 12 }} />
-              <YAxis dataKey="city" type="category" tick={{ fontSize: 12 }} width={100} />
-              <Tooltip />
-              <Bar dataKey="count" fill="#7c3aed" radius={[0, 4, 4, 0]} />
+              <CartesianGrid strokeDasharray="3 3" stroke="#e5ddd0" />
+              <XAxis type="number" tick={{ fontSize: 12, fill: "#7a7268" }} />
+              <YAxis dataKey="city" type="category" tick={{ fontSize: 12, fill: "#7a7268" }} width={100} />
+              <Tooltip contentStyle={tooltipStyle} />
+              <Bar dataKey="count" fill="#1e3a5f" radius={[0, 6, 6, 0]} />
             </BarChart>
           </ResponsiveContainer>
         </CardContent>

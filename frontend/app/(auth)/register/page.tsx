@@ -32,15 +32,16 @@ export default function RegisterPage() {
   };
 
   return (
-    <Card>
-      <CardHeader className="text-center">
-        <div className="mx-auto mb-4 flex h-12 w-12 items-center justify-center rounded-xl bg-brand-600">
-          <Map className="h-6 w-6 text-white" />
+    <Card className="overflow-hidden shadow-[var(--shadow-elevated)]">
+      <div className="h-1.5 bg-gradient-to-r from-brand-700 via-accent-500 to-brand-700" />
+      <CardHeader className="pb-2 text-center">
+        <div className="mx-auto mb-4 flex h-14 w-14 items-center justify-center rounded-2xl bg-brand-800 shadow-[0_4px_12px_rgba(12,25,41,0.25)]">
+          <Map className="h-6 w-6 text-accent-200" />
         </div>
-        <CardTitle className="text-2xl">Create an account</CardTitle>
+        <CardTitle className="font-display text-2xl">Create an account</CardTitle>
         <CardDescription>Join {APP_NAME} to report and track road damage</CardDescription>
       </CardHeader>
-      <CardContent>
+      <CardContent className="pb-8">
         <form onSubmit={handleSubmit} className="space-y-4">
           <Input
             id="name"
@@ -85,9 +86,9 @@ export default function RegisterPage() {
           </Button>
         </form>
 
-        <p className="mt-6 text-center text-sm text-slate-500">
+        <p className="mt-8 text-center text-sm text-muted">
           Already have an account?{" "}
-          <Link href="/login" className="font-medium text-brand-600 hover:text-brand-700">
+          <Link href="/login" className="font-semibold text-accent-600 hover:text-accent-700">
             Sign In
           </Link>
         </p>

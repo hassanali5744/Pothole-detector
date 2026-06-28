@@ -4,6 +4,7 @@ import Link from "next/link";
 import { FileText, Upload, Bell, Clock } from "lucide-react";
 import { RoleGuard } from "@/components/layout/auth-guard";
 import { StatCard } from "@/components/ui/stat-card";
+import { PageHeader } from "@/components/ui/page-header";
 import { Button } from "@/components/ui/button";
 import { ReportCard } from "@/components/reports/report-card";
 import { mockReports, mockNotifications } from "@/lib/mock-data";
@@ -23,20 +24,17 @@ export default function CitizenDashboard() {
   return (
     <RoleGuard allowedRoles={["citizen"]}>
       <div className="space-y-8">
-        <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-          <div>
-            <h1 className="text-2xl font-bold text-slate-900">
-              Welcome back, {user?.name.split(" ")[0]}
-            </h1>
-            <p className="text-slate-500">Track your road damage reports and complaints.</p>
-          </div>
+        <PageHeader
+          title={`Welcome back, ${user?.name.split(" ")[0]}`}
+          description="Track your road damage reports and complaints."
+        >
           <Link href="/citizen/upload">
             <Button>
               <Upload className="h-4 w-4" />
               Report Damage
             </Button>
           </Link>
-        </div>
+        </PageHeader>
 
         <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
           <StatCard title="Total Reports" value={myReports.length} icon={FileText} />
@@ -48,8 +46,8 @@ export default function CitizenDashboard() {
         <div className="grid gap-8 lg:grid-cols-3">
           <div className="lg:col-span-2">
             <div className="mb-4 flex items-center justify-between">
-              <h2 className="text-lg font-semibold text-slate-900">Recent Reports</h2>
-              <Link href="/citizen/reports" className="text-sm text-brand-600 hover:text-brand-700">
+              <h2 className="font-display text-lg font-semibold text-ink">Recent Reports</h2>
+              <Link href="/citizen/reports" className="text-sm font-semibold text-accent-600 hover:text-accent-700">
                 View all
               </Link>
             </div>
@@ -62,10 +60,10 @@ export default function CitizenDashboard() {
 
           <div>
             <div className="mb-4 flex items-center justify-between">
-              <h2 className="text-lg font-semibold text-slate-900">Notifications</h2>
+              <h2 className="font-display text-lg font-semibold text-ink">Notifications</h2>
               <Link
                 href="/citizen/notifications"
-                className="text-sm text-brand-600 hover:text-brand-700"
+                className="text-sm font-semibold text-accent-600 hover:text-accent-700"
               >
                 View all
               </Link>
@@ -74,11 +72,15 @@ export default function CitizenDashboard() {
               {notifications.map((n) => (
                 <div
                   key={n.id}
-                  className={`rounded-lg border p-4 ${n.read ? "border-slate-200 bg-white" : "border-brand-200 bg-brand-50"}`}
+                  className={`rounded-xl border p-4 transition-colors ${
+                    n.read
+                      ? "border-line bg-surface"
+                      : "border-accent-200 bg-accent-50/60"
+                  }`}
                 >
-                  <p className="text-sm font-medium text-slate-900">{n.title}</p>
-                  <p className="mt-1 text-xs text-slate-500">{n.message}</p>
-                  <p className="mt-2 text-xs text-slate-400">{formatDateTime(n.createdAt)}</p>
+                  <p className="text-sm font-semibold text-ink">{n.title}</p>
+                  <p className="mt-1 text-xs leading-relaxed text-muted">{n.message}</p>
+                  <p className="mt-2 text-xs text-muted/70">{formatDateTime(n.createdAt)}</p>
                 </div>
               ))}
             </div>

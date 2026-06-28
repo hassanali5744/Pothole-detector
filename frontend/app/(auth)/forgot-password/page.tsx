@@ -19,16 +19,17 @@ export default function ForgotPasswordPage() {
 
   if (sent) {
     return (
-      <Card>
-        <CardContent className="py-12 text-center">
-          <div className="mx-auto mb-4 flex h-12 w-12 items-center justify-center rounded-full bg-emerald-100">
-            <CheckCircle className="h-6 w-6 text-emerald-600" />
+      <Card className="overflow-hidden shadow-[var(--shadow-elevated)]">
+        <div className="h-1.5 bg-gradient-to-r from-brand-700 via-accent-500 to-brand-700" />
+        <CardContent className="py-14 text-center">
+          <div className="mx-auto mb-5 flex h-14 w-14 items-center justify-center rounded-full bg-success-soft">
+            <CheckCircle className="h-7 w-7 text-success" />
           </div>
-          <h2 className="text-xl font-semibold text-slate-900">Check your email</h2>
-          <p className="mt-2 text-sm text-slate-500">
-            We&apos;ve sent a password reset link to <strong>{email}</strong>
+          <h2 className="font-display text-xl font-semibold text-ink">Check your email</h2>
+          <p className="mt-2 text-sm text-muted">
+            We&apos;ve sent a password reset link to <strong className="text-ink">{email}</strong>
           </p>
-          <Link href="/login" className="mt-6 inline-block">
+          <Link href="/login" className="mt-8 inline-block">
             <Button variant="outline">Back to Sign In</Button>
           </Link>
         </CardContent>
@@ -37,17 +38,18 @@ export default function ForgotPasswordPage() {
   }
 
   return (
-    <Card>
-      <CardHeader className="text-center">
-        <div className="mx-auto mb-4 flex h-12 w-12 items-center justify-center rounded-xl bg-brand-600">
-          <Map className="h-6 w-6 text-white" />
+    <Card className="overflow-hidden shadow-[var(--shadow-elevated)]">
+      <div className="h-1.5 bg-gradient-to-r from-brand-700 via-accent-500 to-brand-700" />
+      <CardHeader className="pb-2 text-center">
+        <div className="mx-auto mb-4 flex h-14 w-14 items-center justify-center rounded-2xl bg-brand-800 shadow-[0_4px_12px_rgba(12,25,41,0.25)]">
+          <Map className="h-6 w-6 text-accent-200" />
         </div>
-        <CardTitle className="text-2xl">Forgot password?</CardTitle>
+        <CardTitle className="font-display text-2xl">Forgot password?</CardTitle>
         <CardDescription>
           Enter your email and we&apos;ll send you a reset link
         </CardDescription>
       </CardHeader>
-      <CardContent>
+      <CardContent className="pb-8">
         <form onSubmit={handleSubmit} className="space-y-4">
           <Input
             id="email"
@@ -62,9 +64,9 @@ export default function ForgotPasswordPage() {
             Send Reset Link
           </Button>
         </form>
-        <p className="mt-6 text-center text-sm text-slate-500">
+        <p className="mt-8 text-center text-sm text-muted">
           Remember your password?{" "}
-          <Link href="/login" className="font-medium text-brand-600 hover:text-brand-700">
+          <Link href="/login" className="font-semibold text-accent-600 hover:text-accent-700">
             Sign In
           </Link>
         </p>

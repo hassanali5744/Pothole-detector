@@ -3,19 +3,19 @@ import type { ReportStatus, SeverityLevel } from "@/lib/types";
 import { STATUS_LABELS } from "@/lib/constants";
 
 const statusStyles: Record<ReportStatus, string> = {
-  reported: "bg-blue-50 text-blue-700 ring-blue-600/20",
-  verified: "bg-indigo-50 text-indigo-700 ring-indigo-600/20",
-  assigned: "bg-purple-50 text-purple-700 ring-purple-600/20",
-  in_progress: "bg-amber-50 text-amber-700 ring-amber-600/20",
-  completed: "bg-emerald-50 text-emerald-700 ring-emerald-600/20",
-  rejected: "bg-red-50 text-red-700 ring-red-600/20",
+  reported: "bg-brand-50 text-brand-700 ring-brand-200",
+  verified: "bg-indigo-50 text-indigo-800 ring-indigo-200",
+  assigned: "bg-purple-50 text-purple-800 ring-purple-200",
+  in_progress: "bg-accent-50 text-accent-700 ring-accent-200",
+  completed: "bg-success-soft text-success ring-emerald-200",
+  rejected: "bg-danger-soft text-danger ring-red-200",
 };
 
 const severityStyles: Record<SeverityLevel, string> = {
-  low: "bg-slate-100 text-slate-700",
-  medium: "bg-yellow-100 text-yellow-800",
-  high: "bg-orange-100 text-orange-800",
-  critical: "bg-red-100 text-red-800",
+  low: "bg-surface-muted text-ink-secondary ring-line",
+  medium: "bg-amber-50 text-amber-800 ring-amber-200",
+  high: "bg-orange-50 text-orange-800 ring-orange-200",
+  critical: "bg-danger-soft text-danger ring-red-200",
 };
 
 interface BadgeProps {
@@ -27,7 +27,7 @@ export function Badge({ children, className }: BadgeProps) {
   return (
     <span
       className={cn(
-        "inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium ring-1 ring-inset",
+        "inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-semibold ring-1 ring-inset",
         className
       )}
     >
@@ -44,7 +44,7 @@ export function StatusBadge({ status }: { status: ReportStatus }) {
 
 export function SeverityBadge({ severity }: { severity: SeverityLevel }) {
   return (
-    <Badge className={cn(severityStyles[severity], "capitalize ring-0")}>
+    <Badge className={cn(severityStyles[severity], "capitalize")}>
       {severity}
     </Badge>
   );

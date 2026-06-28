@@ -1,6 +1,7 @@
 "use client";
 
 import { RoleGuard } from "@/components/layout/auth-guard";
+import { PageHeader } from "@/components/ui/page-header";
 import { ReportCard } from "@/components/reports/report-card";
 import { mockReports } from "@/lib/mock-data";
 
@@ -12,10 +13,10 @@ export default function VerifiedReportsPage() {
   return (
     <RoleGuard allowedRoles={["inspector"]}>
       <div className="space-y-6">
-        <div>
-          <h1 className="text-2xl font-bold text-slate-900">Verified Reports</h1>
-          <p className="text-slate-500">Reports that have been reviewed and approved by inspectors.</p>
-        </div>
+        <PageHeader
+          title="Verified Reports"
+          description="Reports that have been reviewed and approved by inspectors."
+        />
         <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
           {verified.map((report) => (
             <ReportCard key={report.id} report={report} showUser />

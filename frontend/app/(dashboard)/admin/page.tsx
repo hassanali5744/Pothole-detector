@@ -1,9 +1,10 @@
 "use client";
 
-import { FileText, Users, Wrench, AlertTriangle } from "lucide-react";
 import Link from "next/link";
+import { FileText, Users, Wrench, AlertTriangle } from "lucide-react";
 import { RoleGuard } from "@/components/layout/auth-guard";
 import { StatCard } from "@/components/ui/stat-card";
+import { PageHeader } from "@/components/ui/page-header";
 import { AnalyticsCharts } from "@/components/charts/analytics-charts";
 import { ReportCard } from "@/components/reports/report-card";
 import { mockReports, mockAnalytics, mockUsers } from "@/lib/mock-data";
@@ -17,12 +18,10 @@ export default function AdminDashboard() {
   return (
     <RoleGuard allowedRoles={["admin"]}>
       <div className="space-y-8">
-        <div>
-          <h1 className="text-2xl font-bold text-slate-900">Admin Dashboard</h1>
-          <p className="text-slate-500">
-            Monitor reports, manage users, and view platform analytics.
-          </p>
-        </div>
+        <PageHeader
+          title="Admin Dashboard"
+          description="Monitor reports, manage users, and view platform analytics."
+        />
 
         <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
           <StatCard title="Total Reports" value={mockReports.length} icon={FileText} />
@@ -33,8 +32,8 @@ export default function AdminDashboard() {
 
         <div>
           <div className="mb-4 flex items-center justify-between">
-            <h2 className="text-lg font-semibold text-slate-900">Recent Reports</h2>
-            <Link href="/admin/reports" className="text-sm text-brand-600 hover:text-brand-700">
+            <h2 className="font-display text-lg font-semibold text-ink">Recent Reports</h2>
+            <Link href="/admin/reports" className="text-sm font-semibold text-accent-600 hover:text-accent-700">
               View all
             </Link>
           </div>
@@ -46,7 +45,7 @@ export default function AdminDashboard() {
         </div>
 
         <div>
-          <h2 className="mb-4 text-lg font-semibold text-slate-900">Analytics Overview</h2>
+          <h2 className="mb-4 font-display text-lg font-semibold text-ink">Analytics Overview</h2>
           <AnalyticsCharts data={mockAnalytics} />
         </div>
       </div>

@@ -2,6 +2,7 @@
 
 import { Bell, CheckCircle, Info, AlertTriangle, XCircle } from "lucide-react";
 import { RoleGuard } from "@/components/layout/auth-guard";
+import { PageHeader } from "@/components/ui/page-header";
 import { mockNotifications } from "@/lib/mock-data";
 import { formatDateTime } from "@/lib/utils";
 
@@ -13,10 +14,10 @@ const iconMap = {
 };
 
 const colorMap = {
-  success: "text-emerald-600 bg-emerald-50",
-  info: "text-blue-600 bg-blue-50",
-  warning: "text-amber-600 bg-amber-50",
-  error: "text-red-600 bg-red-50",
+  success: "text-success bg-success-soft",
+  info: "text-brand-700 bg-brand-50",
+  warning: "text-accent-700 bg-accent-50",
+  error: "text-danger bg-danger-soft",
 };
 
 export default function NotificationsPage() {
@@ -25,10 +26,10 @@ export default function NotificationsPage() {
   return (
     <RoleGuard allowedRoles={["citizen"]}>
       <div className="mx-auto max-w-2xl space-y-6">
-        <div>
-          <h1 className="text-2xl font-bold text-slate-900">Notifications</h1>
-          <p className="text-slate-500">Stay updated on your report status and repair progress.</p>
-        </div>
+        <PageHeader
+          title="Notifications"
+          description="Stay updated on your report status and repair progress."
+        />
 
         <div className="space-y-3">
           {notifications.map((n) => {
@@ -36,24 +37,24 @@ export default function NotificationsPage() {
             return (
               <div
                 key={n.id}
-                className={`flex gap-4 rounded-xl border p-4 ${
-                  n.read ? "border-slate-200 bg-white" : "border-brand-200 bg-brand-50/50"
+                className={`flex gap-4 rounded-xl border p-4 transition-colors ${
+                  n.read ? "border-line bg-surface" : "border-accent-200 bg-accent-50/50"
                 }`}
               >
-                <div className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-full ${colorMap[n.type]}`}>
+                <div className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-xl ${colorMap[n.type]}`}>
                   <Icon className="h-5 w-5" />
                 </div>
                 <div className="min-w-0 flex-1">
                   <div className="flex items-start justify-between gap-2">
-                    <p className="font-medium text-slate-900">{n.title}</p>
+                    <p className="font-semibold text-ink">{n.title}</p>
                     {!n.read && (
-                      <span className="shrink-0 rounded-full bg-brand-600 px-2 py-0.5 text-xs text-white">
+                      <span className="shrink-0 rounded-full bg-accent-500 px-2 py-0.5 text-[10px] font-bold uppercase tracking-wide text-white">
                         New
                       </span>
                     )}
                   </div>
-                  <p className="mt-1 text-sm text-slate-500">{n.message}</p>
-                  <p className="mt-2 text-xs text-slate-400">{formatDateTime(n.createdAt)}</p>
+                  <p className="mt-1 text-sm leading-relaxed text-muted">{n.message}</p>
+                  <p className="mt-2 text-xs text-muted/70">{formatDateTime(n.createdAt)}</p>
                 </div>
               </div>
             );
@@ -61,9 +62,9 @@ export default function NotificationsPage() {
         </div>
 
         {notifications.length === 0 && (
-          <div className="rounded-xl border border-dashed border-slate-300 py-16 text-center">
-            <Bell className="mx-auto h-8 w-8 text-slate-300" />
-            <p className="mt-2 text-slate-500">No notifications yet.</p>
+          <div className="rounded-xl border border-dashed border-line-strong py-16 text-center">
+            <Bell className="mx-auto h-8 w-8 text-line-strong" />
+            <p className="mt-2 text-muted">No notifications yet.</p>
           </div>
         )}
       </div>

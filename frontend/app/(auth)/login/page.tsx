@@ -46,15 +46,16 @@ export default function LoginPage() {
   };
 
   return (
-    <Card>
-      <CardHeader className="text-center">
-        <div className="mx-auto mb-4 flex h-12 w-12 items-center justify-center rounded-xl bg-brand-600">
-          <Map className="h-6 w-6 text-white" />
+    <Card className="overflow-hidden shadow-[var(--shadow-elevated)]">
+      <div className="h-1.5 bg-gradient-to-r from-brand-700 via-accent-500 to-brand-700" />
+      <CardHeader className="pb-2 text-center">
+        <div className="mx-auto mb-4 flex h-14 w-14 items-center justify-center rounded-2xl bg-brand-800 shadow-[0_4px_12px_rgba(12,25,41,0.25)]">
+          <Map className="h-6 w-6 text-accent-200" />
         </div>
-        <CardTitle className="text-2xl">Welcome back</CardTitle>
+        <CardTitle className="font-display text-2xl">Welcome back</CardTitle>
         <CardDescription>Sign in to your {APP_NAME} account</CardDescription>
       </CardHeader>
-      <CardContent>
+      <CardContent className="pb-8">
         <form onSubmit={handleSubmit} className="space-y-4">
           <Input
             id="email"
@@ -77,7 +78,7 @@ export default function LoginPage() {
             />
             <button
               type="button"
-              className="absolute right-3 top-9 text-slate-400 hover:text-slate-600"
+              className="absolute right-3 top-10 text-muted hover:text-ink"
               onClick={() => setShowPassword(!showPassword)}
             >
               {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
@@ -85,11 +86,13 @@ export default function LoginPage() {
           </div>
 
           {error && (
-            <p className="rounded-lg bg-red-50 px-3 py-2 text-sm text-red-600">{error}</p>
+            <p className="rounded-xl bg-danger-soft px-3 py-2.5 text-sm font-medium text-danger">
+              {error}
+            </p>
           )}
 
           <div className="flex justify-end">
-            <Link href="/forgot-password" className="text-sm text-brand-600 hover:text-brand-700">
+            <Link href="/forgot-password" className="text-sm font-semibold text-accent-600 hover:text-accent-700">
               Forgot password?
             </Link>
           </div>
@@ -99,8 +102,8 @@ export default function LoginPage() {
           </Button>
         </form>
 
-        <div className="mt-6 space-y-2">
-          <p className="text-center text-xs font-medium uppercase tracking-wide text-slate-400">
+        <div className="mt-8 space-y-2">
+          <p className="text-center text-[10px] font-bold uppercase tracking-[0.14em] text-muted">
             Demo Accounts
           </p>
           {[
@@ -112,17 +115,17 @@ export default function LoginPage() {
               key={demo.email}
               type="button"
               onClick={() => demoLogin(demo.email)}
-              className="flex w-full items-center justify-between rounded-lg border border-slate-200 px-3 py-2 text-sm hover:bg-slate-50"
+              className="flex w-full items-center justify-between rounded-xl border border-line bg-surface-muted/40 px-4 py-2.5 text-sm transition-colors hover:border-line-strong hover:bg-surface-muted"
             >
-              <span className="text-slate-600">{demo.role}</span>
-              <span className="text-slate-400">{demo.email}</span>
+              <span className="font-medium text-ink-secondary">{demo.role}</span>
+              <span className="text-xs text-muted">{demo.email}</span>
             </button>
           ))}
         </div>
 
-        <p className="mt-6 text-center text-sm text-slate-500">
+        <p className="mt-8 text-center text-sm text-muted">
           Don&apos;t have an account?{" "}
-          <Link href="/register" className="font-medium text-brand-600 hover:text-brand-700">
+          <Link href="/register" className="font-semibold text-accent-600 hover:text-accent-700">
             Register
           </Link>
         </p>

@@ -8,7 +8,7 @@ import {
   CheckCircle,
   Users,
   ArrowRight,
-  Zap,
+  Sparkles,
   FileText,
   Bell,
 } from "lucide-react";
@@ -102,81 +102,101 @@ export default function Home() {
       <Navbar />
 
       {/* Hero */}
-      <section className="relative overflow-hidden bg-gradient-to-br from-slate-900 via-brand-700 to-brand-600 px-4 py-24 sm:px-6 lg:px-8">
-        <div className="absolute inset-0 bg-[url('data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNjAiIGhlaWdodD0iNjAiIHZpZXdCb3g9IjAgMCA2MCA2MCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48ZyBmaWxsPSJub25lIiBmaWxsLXJ1bGU9ImV2ZW5vZGQiPjxnIGZpbGw9IiNmZmYiIGZpbGwtb3BhY2l0eT0iMC4wNSI+PGNpcmNsZSBjeD0iMzAiIGN5PSIzMCIgcj0iMiIvPjwvZz48L2c+PC9zdmc+')] opacity-50" />
-        <div className="relative mx-auto max-w-7xl">
-          <div className="max-w-3xl">
-            <div className="mb-6 inline-flex items-center gap-2 rounded-full bg-white/10 px-4 py-1.5 text-sm text-white backdrop-blur-sm">
-              <Zap className="h-4 w-4" />
-              AI-Powered Road Infrastructure Platform
-            </div>
-            <h1 className="text-4xl font-bold tracking-tight text-white sm:text-5xl lg:text-6xl">
-              Smarter Roads Start with{" "}
-              <span className="text-blue-200">{APP_NAME}</span>
-            </h1>
-            <p className="mt-6 text-lg leading-8 text-blue-100">
-              Automatically detect road defects, generate intelligent inspection reports,
-              and help authorities prioritize repairs — all from a single platform.
-            </p>
-            <div className="mt-10 flex flex-col gap-4 sm:flex-row">
-              <Link href="/register">
-                <Button size="lg" className="w-full bg-white text-brand-700 hover:bg-blue-50 sm:w-auto">
-                  Start Reporting
-                  <ArrowRight className="h-4 w-4" />
-                </Button>
-              </Link>
-              <Link href="/login">
-                <Button
-                  size="lg"
-                  variant="outline"
-                  className="w-full border-white/30 bg-white/10 text-white hover:bg-white/20 sm:w-auto"
-                >
-                  Sign In to Dashboard
-                </Button>
-              </Link>
-            </div>
-          </div>
+      <section
+        className="relative overflow-hidden px-4 py-28 sm:px-6 lg:px-8 lg:py-36"
+        style={{
+          background:
+            "linear-gradient(135deg, #071018 0%, #0c1929 45%, #152a45 100%)",
+        }}
+      >
+        <div className="pointer-events-none absolute inset-0 opacity-[0.04]">
+          <div
+            className="absolute inset-0"
+            style={{
+              backgroundImage: `url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23ffffff' fill-opacity='1'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E")`,
+            }}
+          />
+        </div>
 
-          {/* Stats */}
-          <div className="mt-16 grid grid-cols-2 gap-4 sm:grid-cols-4">
-            {[
-              { value: "5+", label: "Damage Types Detected" },
-              { value: "94%", label: "AI Accuracy" },
-              { value: "3", label: "User Roles" },
-              { value: "24/7", label: "Report Tracking" },
-            ].map((stat) => (
-              <div
-                key={stat.label}
-                className="rounded-xl bg-white/10 p-4 text-center backdrop-blur-sm"
-              >
-                <p className="text-2xl font-bold text-white">{stat.value}</p>
-                <p className="mt-1 text-xs text-blue-200">{stat.label}</p>
+        <div className="relative mx-auto max-w-7xl">
+          <div className="grid items-center gap-16 lg:grid-cols-[1.1fr_0.9fr]">
+            <div>
+              <div className="mb-6 inline-flex items-center gap-2 rounded-full border border-[#e8c99a]/30 bg-[#b87333]/15 px-4 py-1.5 text-xs font-semibold uppercase tracking-wider text-[#f5e6cc]">
+                <Sparkles className="h-3.5 w-3.5 text-[#e8c99a]" />
+                AI-Powered Infrastructure
               </div>
-            ))}
+              <h1 className="font-display text-4xl font-semibold leading-[1.1] tracking-tight text-white sm:text-5xl lg:text-[3.5rem]">
+                Smarter roads begin with{" "}
+                <span className="text-[#e8c99a]">{APP_NAME}</span>
+              </h1>
+              <p className="mt-6 max-w-xl text-lg leading-relaxed text-[#d5dfea]">
+                Detect road defects automatically, generate intelligent inspection reports,
+                and help authorities prioritize repairs — from one trusted civic platform.
+              </p>
+              <div className="mt-10 flex flex-col gap-4 sm:flex-row">
+                <Link href="/register">
+                  <Button size="lg" className="w-full sm:w-auto">
+                    Start Reporting
+                    <ArrowRight className="h-4 w-4" />
+                  </Button>
+                </Link>
+                <Link href="/login">
+                  <Button
+                    size="lg"
+                    variant="ghost"
+                    className="w-full border border-white/30 bg-white/10 text-white hover:bg-white/20 hover:text-white sm:w-auto"
+                  >
+                    Sign In to Dashboard
+                  </Button>
+                </Link>
+              </div>
+            </div>
+
+            <div className="grid grid-cols-2 gap-4">
+              {[
+                { value: "5+", label: "Damage Types Detected" },
+                { value: "94%", label: "AI Accuracy" },
+                { value: "3", label: "User Roles" },
+                { value: "24/7", label: "Report Tracking" },
+              ].map((stat) => (
+                <div
+                  key={stat.label}
+                  className="rounded-2xl border border-white/20 bg-white/10 p-6 backdrop-blur-sm"
+                >
+                  <p className="font-display text-3xl font-semibold text-white">{stat.value}</p>
+                  <p className="mt-2 text-xs font-medium leading-snug text-[#a8bdd4]">
+                    {stat.label}
+                  </p>
+                </div>
+              ))}
+            </div>
           </div>
         </div>
+
+        <div className="absolute bottom-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-accent-500/40 to-transparent" />
       </section>
 
       {/* Features */}
       <section id="features" className="px-4 py-24 sm:px-6 lg:px-8">
         <div className="mx-auto max-w-7xl">
-          <div className="text-center">
-            <h2 className="text-3xl font-bold text-slate-900">Core Features</h2>
-            <p className="mt-4 text-lg text-slate-600">
-              Everything you need to detect, report, and repair road damage efficiently.
+          <div className="mx-auto max-w-2xl text-center">
+            <p className="eyebrow justify-center">Capabilities</p>
+            <h2 className="section-heading mt-3">Everything for modern road care</h2>
+            <p className="section-subheading mx-auto">
+              A complete platform to detect, report, verify, and repair road damage with clarity and accountability.
             </p>
           </div>
-          <div className="mt-16 grid gap-8 sm:grid-cols-2 lg:grid-cols-3">
+          <div className="mt-16 grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
             {features.map((feature) => (
               <div
                 key={feature.title}
-                className="rounded-xl border border-slate-200 bg-white p-6 shadow-sm transition-shadow hover:shadow-md"
+                className="surface-card surface-card-hover group p-7"
               >
-                <div className="mb-4 inline-flex rounded-lg bg-brand-50 p-3">
-                  <feature.icon className="h-6 w-6 text-brand-600" />
+                <div className="mb-5 inline-flex rounded-xl bg-accent-50 p-3 ring-1 ring-accent-100 transition-colors group-hover:bg-accent-100">
+                  <feature.icon className="h-6 w-6 text-accent-600" />
                 </div>
-                <h3 className="text-lg font-semibold text-slate-900">{feature.title}</h3>
-                <p className="mt-2 text-sm leading-6 text-slate-600">{feature.description}</p>
+                <h3 className="font-display text-xl font-semibold text-ink">{feature.title}</h3>
+                <p className="mt-2.5 text-sm leading-relaxed text-muted">{feature.description}</p>
               </div>
             ))}
           </div>
@@ -184,20 +204,24 @@ export default function Home() {
       </section>
 
       {/* How it works */}
-      <section id="how-it-works" className="bg-slate-100 px-4 py-24 sm:px-6 lg:px-8">
+      <section id="how-it-works" className="border-y border-line bg-surface-muted/50 px-4 py-24 sm:px-6 lg:px-8">
         <div className="mx-auto max-w-7xl">
-          <div className="text-center">
-            <h2 className="text-3xl font-bold text-slate-900">How It Works</h2>
-            <p className="mt-4 text-lg text-slate-600">
-              From citizen report to completed repair in four simple steps.
+          <div className="mx-auto max-w-2xl text-center">
+            <p className="eyebrow justify-center">Process</p>
+            <h2 className="section-heading mt-3">How it works</h2>
+            <p className="section-subheading mx-auto">
+              From citizen report to completed repair in four deliberate steps.
             </p>
           </div>
-          <div className="mt-16 grid gap-8 sm:grid-cols-2 lg:grid-cols-4">
+          <div className="relative mt-16 grid gap-8 sm:grid-cols-2 lg:grid-cols-4">
+            <div className="absolute left-0 right-0 top-8 hidden h-px bg-gradient-to-r from-transparent via-line-strong to-transparent lg:block" />
             {steps.map((step) => (
-              <div key={step.step} className="relative">
-                <div className="text-5xl font-bold text-brand-100">{step.step}</div>
-                <h3 className="mt-2 text-lg font-semibold text-slate-900">{step.title}</h3>
-                <p className="mt-2 text-sm text-slate-600">{step.description}</p>
+              <div key={step.step} className="relative text-center lg:text-left">
+                <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-2xl border border-line bg-surface font-display text-xl font-semibold text-brand-700 shadow-[var(--shadow-soft)] lg:mx-0">
+                  {step.step}
+                </div>
+                <h3 className="font-display text-lg font-semibold text-ink">{step.title}</h3>
+                <p className="mt-2 text-sm leading-relaxed text-muted">{step.description}</p>
               </div>
             ))}
           </div>
@@ -207,26 +231,28 @@ export default function Home() {
       {/* Roles */}
       <section id="roles" className="px-4 py-24 sm:px-6 lg:px-8">
         <div className="mx-auto max-w-7xl">
-          <div className="text-center">
-            <h2 className="text-3xl font-bold text-slate-900">Built for Everyone</h2>
-            <p className="mt-4 text-lg text-slate-600">
+          <div className="mx-auto max-w-2xl text-center">
+            <p className="eyebrow justify-center">Audience</p>
+            <h2 className="section-heading mt-3">Built for everyone</h2>
+            <p className="section-subheading mx-auto">
               Tailored experiences for citizens, inspectors, and administrators.
             </p>
           </div>
-          <div className="mt-16 grid gap-8 lg:grid-cols-3">
+          <div className="mt-16 grid gap-6 lg:grid-cols-3">
             {roles.map((role) => (
               <div
                 key={role.title}
-                className="rounded-xl border border-slate-200 bg-white p-8 shadow-sm"
+                className="surface-card relative overflow-hidden p-8"
               >
-                <div className="mb-4 inline-flex rounded-lg bg-brand-50 p-3">
-                  <role.icon className="h-6 w-6 text-brand-600" />
+                <div className="absolute inset-x-0 top-0 h-1 bg-gradient-to-r from-brand-600 to-accent-500" />
+                <div className="mb-5 inline-flex rounded-xl bg-brand-50 p-3 ring-1 ring-brand-100">
+                  <role.icon className="h-6 w-6 text-brand-700" />
                 </div>
-                <h3 className="text-xl font-semibold text-slate-900">{role.title}</h3>
-                <ul className="mt-4 space-y-2">
+                <h3 className="font-display text-xl font-semibold text-ink">{role.title}</h3>
+                <ul className="mt-5 space-y-3">
                   {role.items.map((item) => (
-                    <li key={item} className="flex items-center gap-2 text-sm text-slate-600">
-                      <CheckCircle className="h-4 w-4 shrink-0 text-emerald-500" />
+                    <li key={item} className="flex items-start gap-2.5 text-sm text-ink-secondary">
+                      <CheckCircle className="mt-0.5 h-4 w-4 shrink-0 text-success" />
                       {item}
                     </li>
                   ))}
@@ -238,14 +264,20 @@ export default function Home() {
       </section>
 
       {/* CTA */}
-      <section className="bg-brand-600 px-4 py-16 sm:px-6 lg:px-8">
-        <div className="mx-auto max-w-3xl text-center">
-          <h2 className="text-3xl font-bold text-white">Ready to improve your roads?</h2>
-          <p className="mt-4 text-lg text-blue-100">
-            Join RoadVision AI and help build safer, better-maintained road infrastructure.
+      <section
+        className="relative overflow-hidden px-4 py-20 sm:px-6 lg:px-8"
+        style={{ background: "linear-gradient(135deg, #0c1929 0%, #152a45 100%)" }}
+      >
+        <div className="pointer-events-none absolute -right-20 -top-20 h-64 w-64 rounded-full bg-[#b87333]/15 blur-3xl" />
+        <div className="relative mx-auto max-w-3xl text-center">
+          <h2 className="font-display text-3xl font-semibold text-white sm:text-4xl">
+            Ready to improve your roads?
+          </h2>
+          <p className="mt-4 text-lg leading-relaxed text-[#d5dfea]">
+            Join {APP_NAME} and help build safer, better-maintained road infrastructure for your community.
           </p>
           <Link href="/register" className="mt-8 inline-block">
-            <Button size="lg" className="bg-white text-brand-700 hover:bg-blue-50">
+            <Button size="lg">
               Create Free Account
               <ArrowRight className="h-4 w-4" />
             </Button>
@@ -254,14 +286,19 @@ export default function Home() {
       </section>
 
       {/* Footer */}
-      <footer className="border-t border-slate-200 bg-white px-4 py-8 sm:px-6 lg:px-8">
-        <div className="mx-auto flex max-w-7xl flex-col items-center justify-between gap-4 sm:flex-row">
-          <p className="text-sm text-slate-500">
-            &copy; 2026 {APP_NAME}. All rights reserved.
-          </p>
-          <div className="flex gap-6 text-sm text-slate-500">
-            <Link href="/login" className="hover:text-slate-700">Sign In</Link>
-            <Link href="/register" className="hover:text-slate-700">Register</Link>
+      <footer className="border-t border-line bg-surface px-4 py-10 sm:px-6 lg:px-8">
+        <div className="mx-auto flex max-w-7xl flex-col items-center justify-between gap-6 sm:flex-row">
+          <div className="flex items-center gap-3">
+            <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-brand-800">
+              <MapPin className="h-4 w-4 text-accent-200" />
+            </div>
+            <p className="text-sm text-muted">
+              &copy; 2026 {APP_NAME}. All rights reserved.
+            </p>
+          </div>
+          <div className="flex gap-8 text-sm font-medium text-muted">
+            <Link href="/login" className="transition-colors hover:text-ink">Sign In</Link>
+            <Link href="/register" className="transition-colors hover:text-ink">Register</Link>
           </div>
         </div>
       </footer>

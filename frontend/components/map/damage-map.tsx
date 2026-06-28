@@ -62,7 +62,7 @@ export function DamageMap({
   }, [filtered]);
 
   return (
-    <div style={{ height }} className="w-full overflow-hidden rounded-xl border border-slate-200">
+    <div style={{ height }} className="w-full overflow-hidden rounded-xl border border-line shadow-[var(--shadow-soft)]">
       <MapContainer
         center={[center.lat, center.lng]}
         zoom={11}
