@@ -77,7 +77,7 @@ export default function InspectorDashboard() {
                 />
               </Link>
               
-              <Link href="/inspector/critical" className="contents">
+              <Link href="/inspector/pending?severity=critical" className="contents">
                 <StatCard
                   title="Critical Issues"
                   value={reports.filter((r) => r.severity === "critical").length}

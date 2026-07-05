@@ -7,7 +7,7 @@ from datetime import datetime
 from database import get_db
 from models import ReportOut, ReportStatus, ReportUpdate, UserRole
 from auth import get_current_user
-from config import UPLOAD_DIR
+from config import UPLOAD_DIR, SEVERITY_PRIORITY
 from utils import format_report
 
 router = APIRouter(prefix="/api/reports", tags=["Reports"])
@@ -67,6 +67,16 @@ async def create_report(
     except json.JSONDecodeError:
         detections_list = []
 
+    if not detections_list:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="AI analysis required before submitting. Run detection on the uploaded image first.",
+        )
+
+    severity = detections_list[0].get("severity", severity)
+    damageType = detections_list[0].get("damageType", damageType)
+    priority_score = SEVERITY_PRIORITY.get(severity, 1)
+
     report_id = f"r{uuid.uuid4().hex[:8]}"
     now_iso = datetime.utcnow().isoformat() + "Z"
 
@@ -92,6 +102,7 @@ async def create_report(
         "assignedTo": None,
         "notes": None,
         "scheduledDate": None,
+        "priorityScore": priority_score,
     }
 
     await db.reports.insert_one(new_report)
@@ -123,7 +134,13 @@ async def get_reports(
     if damageType and damageType != "all":
         query["damageType"] = damageType
 
-    cursor = db.reports.find(query).sort("createdAt", -1)
+    # Inspectors/admins see highest severity & priority first
+    if current_user["role"] in (UserRole.INSPECTOR.value, UserRole.ADMIN.value):
+        sort_keys = [("priorityScore", -1), ("createdAt", -1)]
+    else:
+        sort_keys = [("createdAt", -1)]
+
+    cursor = db.reports.find(query).sort(sort_keys)
     reports = await cursor.to_list(length=200)
     return [format_report(r) for r in reports]
 

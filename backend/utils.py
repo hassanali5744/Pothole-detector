@@ -29,6 +29,7 @@ def format_report(report: dict) -> dict:
         "assignedTo": report.get("assignedTo"),
         "notes": report.get("notes"),
         "scheduledDate": report.get("scheduledDate"),
+        "priorityScore": report.get("priorityScore", 1),
     }
 
 

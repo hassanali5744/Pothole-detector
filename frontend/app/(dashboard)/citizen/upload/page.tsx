@@ -2,7 +2,7 @@
 
 import { useState, useCallback } from "react";
 import Image from "next/image";
-import { Upload, MapPin, Brain, CheckCircle, X, ImageIcon } from "lucide-react";
+import { Upload, MapPin, Brain, CheckCircle, X, ImageIcon, AlertTriangle } from "lucide-react";
 import { RoleGuard } from "@/components/layout/auth-guard";
 import { PageHeader } from "@/components/ui/page-header";
 import { Button } from "@/components/ui/button";
@@ -21,15 +21,13 @@ interface AIResult {
   explanation: string;
 }
 
-const mockAIResults: AIResult[] = [
-  {
-    damageType: "pothole",
-    confidence: 0.93,
-    severity: "high",
-    explanation:
-      "Large circular depression detected with irregular edges. Estimated depth appears significant based on shadow analysis.",
-  },
-];
+interface AnalyzeResponse {
+  accepted: boolean;
+  isRoadDamage: boolean;
+  modelUsed: string;
+  detections: AIResult[];
+  explanation: string;
+}
 
 export default function UploadPage() {
   const [file, setFile] = useState<File | null>(null);
@@ -38,17 +36,28 @@ export default function UploadPage() {
   const [city, setCity] = useState("New Delhi");
   const [analyzing, setAnalyzing] = useState(false);
   const [aiResults, setAiResults] = useState<AIResult[] | null>(null);
+  const [aiExplanation, setAiExplanation] = useState("");
+  const [modelUsed, setModelUsed] = useState("");
+  const [rejected, setRejected] = useState(false);
+  const [rejectionReason, setRejectionReason] = useState("");
   const [submitted, setSubmitted] = useState(false);
   const [dragOver, setDragOver] = useState(false);
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState("");
 
   const handleFile = useCallback((f: File) => {
+    if (!f.type.startsWith("image/")) {
+      setError("Please upload a photo (JPG/PNG) of the road damage. Video is not supported yet.");
+      return;
+    }
     setFile(f);
     setAiResults(null);
+    setAiExplanation("");
+    setRejected(false);
+    setRejectionReason("");
     setSubmitted(false);
-    const url = URL.createObjectURL(f);
-    setPreview(url);
+    setError("");
+    setPreview(URL.createObjectURL(f));
   }, []);
 
   const onDrop = useCallback(
@@ -56,9 +65,7 @@ export default function UploadPage() {
       e.preventDefault();
       setDragOver(false);
       const f = e.dataTransfer.files[0];
-      if (f && (f.type.startsWith("image/") || f.type.startsWith("video/"))) {
-        handleFile(f);
-      }
+      if (f) handleFile(f);
     },
     [handleFile]
   );
@@ -67,23 +74,30 @@ export default function UploadPage() {
     if (!file) return;
     setAnalyzing(true);
     setError("");
+    setRejected(false);
+    setRejectionReason("");
+    setAiResults(null);
+
     try {
       const formData = new FormData();
       formData.append("file", file);
-      const data = await apiClient.postForm("/api/ai/analyze", formData);
-      const detections = (data as { detections: AIResult[] }).detections;
-      setAiResults(detections);
+      const data = (await apiClient.postForm("/api/ai/analyze", formData)) as AnalyzeResponse;
+
+      setAiResults(data.detections);
+      setAiExplanation(data.explanation);
+      setModelUsed(data.modelUsed);
     } catch (err: unknown) {
       const message = err instanceof Error ? err.message : "AI analysis failed";
-      setError(message);
-      setAiResults(mockAIResults);
+      setRejected(true);
+      setRejectionReason(message);
+      setAiResults(null);
     } finally {
       setAnalyzing(false);
     }
   };
 
   const submit = async () => {
-    if (!file || !aiResults || aiResults.length === 0) return;
+    if (!file || !aiResults || aiResults.length === 0 || rejected) return;
     setSubmitting(true);
     setError("");
 
@@ -92,22 +106,20 @@ export default function UploadPage() {
       formData.append("file", file);
       formData.append("address", address);
       formData.append("city", city);
-      // Default coordinates for New Delhi
       formData.append("latitude", "28.6139");
       formData.append("longitude", "77.209");
-      
+
       const mainResult = aiResults[0];
       formData.append("damageType", mainResult.damageType);
       formData.append("severity", mainResult.severity);
       formData.append("aiConfidence", mainResult.confidence.toString());
       formData.append("aiDetections", JSON.stringify(aiResults));
-      formData.append("aiExplanation", mainResult.explanation);
+      formData.append("aiExplanation", aiExplanation || mainResult.explanation);
 
       await apiClient.postForm("/api/reports", formData);
       setSubmitted(true);
-    } catch (err: any) {
-      console.error("Error submitting report:", err);
-      setError(err.message || "Failed to submit report. Please try again.");
+    } catch (err: unknown) {
+      setError(err instanceof Error ? err.message : "Failed to submit report.");
     } finally {
       setSubmitting(false);
     }
@@ -122,9 +134,18 @@ export default function UploadPage() {
           </div>
           <h1 className="font-display text-2xl font-semibold text-ink">Report Submitted!</h1>
           <p className="mt-2 text-muted">
-            Your road damage report has been submitted and is pending inspector review.
+            Your report has been queued for inspector review, prioritized by severity level.
           </p>
-          <Button className="mt-6" onClick={() => { setSubmitted(false); setFile(null); setPreview(null); setAiResults(null); }}>
+          <Button
+            className="mt-6"
+            onClick={() => {
+              setSubmitted(false);
+              setFile(null);
+              setPreview(null);
+              setAiResults(null);
+              setRejected(false);
+            }}
+          >
             Submit Another Report
           </Button>
         </div>
@@ -137,10 +158,9 @@ export default function UploadPage() {
       <div className="mx-auto max-w-3xl space-y-6">
         <PageHeader
           title="Report Road Damage"
-          description="Upload an image or video of the road damage. Our AI will analyze it automatically."
+          description="Upload a clear photo of the defect. Our AI will verify it's road damage, classify the type, and assign severity for inspector prioritization."
         />
 
-        {/* Upload zone */}
         <Card>
           <CardContent className="p-6">
             <div
@@ -153,15 +173,16 @@ export default function UploadPage() {
             >
               {preview ? (
                 <div className="relative w-full max-w-md">
-                  {file?.type.startsWith("video/") ? (
-                    <video src={preview} controls className="w-full rounded-lg" />
-                  ) : (
-                    <div className="relative h-64 w-full">
-                      <Image src={preview} alt="Preview" fill className="rounded-lg object-cover" />
-                    </div>
-                  )}
+                  <div className="relative h-64 w-full">
+                    <Image src={preview} alt="Preview" fill className="rounded-lg object-cover" unoptimized />
+                  </div>
                   <button
-                    onClick={() => { setFile(null); setPreview(null); setAiResults(null); }}
+                    onClick={() => {
+                      setFile(null);
+                      setPreview(null);
+                      setAiResults(null);
+                      setRejected(false);
+                    }}
                     className="absolute -right-2 -top-2 rounded-full bg-danger p-1 text-white shadow-sm"
                   >
                     <X className="h-4 w-4" />
@@ -173,15 +194,15 @@ export default function UploadPage() {
                     <ImageIcon className="h-8 w-8 text-accent-600" />
                   </div>
                   <p className="text-sm font-semibold text-ink-secondary">
-                    Drag & drop your image or video here
+                    Drag & drop a road damage photo here
                   </p>
-                  <p className="mt-1 text-xs text-muted">PNG, JPG, MP4 up to 50MB</p>
+                  <p className="mt-1 text-xs text-muted">JPG or PNG — pothole, crack, waterlogging, markings, debris</p>
                   <label className="mt-4 inline-flex cursor-pointer items-center gap-2 rounded-xl border border-line bg-surface px-4 py-2.5 text-sm font-semibold text-ink-secondary transition-colors hover:border-line-strong hover:bg-surface-muted">
                     <Upload className="h-4 w-4" />
-                    Browse Files
+                    Browse Photo
                     <input
                       type="file"
-                      accept="image/*,video/*"
+                      accept="image/*"
                       className="hidden"
                       onChange={(e) => e.target.files?.[0] && handleFile(e.target.files[0])}
                     />
@@ -192,7 +213,6 @@ export default function UploadPage() {
           </CardContent>
         </Card>
 
-        {/* Location */}
         <Card>
           <CardHeader>
             <CardTitle className="flex items-center gap-2 text-base">
@@ -223,8 +243,22 @@ export default function UploadPage() {
           </CardContent>
         </Card>
 
-        {/* AI Analysis */}
-        {aiResults && (
+        {rejected && (
+          <Card className="border-danger/30 bg-danger-soft/30">
+            <CardContent className="flex gap-4 p-6">
+              <AlertTriangle className="h-6 w-6 shrink-0 text-danger" />
+              <div>
+                <h3 className="font-semibold text-danger">Image Rejected</h3>
+                <p className="mt-1 text-sm text-ink-secondary">{rejectionReason}</p>
+                <p className="mt-2 text-xs text-muted">
+                  Only valid road damage photos are accepted. Try a closer, well-lit shot of the defect.
+                </p>
+              </div>
+            </CardContent>
+          </Card>
+        )}
+
+        {aiResults && aiResults.length > 0 && (
           <Card>
             <CardHeader>
               <CardTitle className="flex items-center gap-2 text-base">
@@ -232,7 +266,12 @@ export default function UploadPage() {
                 AI Detection Results
               </CardTitle>
               <CardDescription>
-                Our AI model analyzed your upload and detected the following defects.
+                {aiExplanation}
+                {modelUsed && (
+                  <span className="mt-1 block text-xs text-muted">
+                    Model: {modelUsed === "yolo_finetuned" ? "Fine-tuned YOLO" : "Heuristic CV (add road_damage.pt for fine-tuned model)"}
+                  </span>
+                )}
               </CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">
@@ -241,6 +280,9 @@ export default function UploadPage() {
                   <div className="flex items-center justify-between">
                     <h4 className="font-display font-semibold text-ink">
                       {DAMAGE_TYPE_LABELS[result.damageType]}
+                      {i === 0 && (
+                        <span className="ml-2 text-xs font-normal text-accent-600">Primary</span>
+                      )}
                     </h4>
                     <SeverityBadge severity={result.severity} />
                   </div>
@@ -254,21 +296,24 @@ export default function UploadPage() {
           </Card>
         )}
 
-        {error && (
-          <p className="rounded-xl bg-danger-soft px-3 py-2.5 text-sm font-medium text-danger">
-            {error}
-          </p>
+        {error && !rejected && (
+          <p className="rounded-xl bg-danger-soft px-3 py-2.5 text-sm font-medium text-danger">{error}</p>
         )}
 
         <div className="flex gap-3">
-          {file && !aiResults && (
+          {file && !aiResults && !rejected && (
             <Button onClick={analyze} disabled={analyzing || !address}>
-              {analyzing ? "Analyzing..." : "Run AI Analysis"}
+              {analyzing ? "Analyzing with AI..." : "Run AI Analysis"}
             </Button>
           )}
-          {aiResults && (
+          {aiResults && !rejected && (
             <Button onClick={submit} disabled={submitting}>
               {submitting ? "Submitting..." : "Submit Report"}
+            </Button>
+          )}
+          {rejected && file && (
+            <Button variant="outline" onClick={analyze} disabled={analyzing}>
+              {analyzing ? "Re-analyzing..." : "Try Again"}
             </Button>
           )}
         </div>
