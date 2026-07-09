@@ -10,5 +10,17 @@ bcrypt>=4.1.0
 opencv-python-headless>=4.9.0
 numpy>=1.26.0
 Pillow>=10.0.0
-# Optional: install ultralytics when using fine-tuned YOLO weights
-# ultralytics>=8.0.0
+
+# AI/ML Dependencies
+openai>=1.12.0
+anthropic>=0.18.0
+langchain>=0.1.0
+langchain-openai>=0.0.5
+langchain-anthropic>=0.1.0
+sentence-transformers>=2.3.0
+chromadb>=0.4.0
+ultralytics>=8.1.0
+torch>=2.1.0
+torchvision>=0.16.0
+transformers>=4.37.0
+accelerate>=0.26.0

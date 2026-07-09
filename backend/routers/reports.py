@@ -1,8 +1,11 @@
 from fastapi import APIRouter, Depends, HTTPException, status, UploadFile, File, Form, Request
+from fastapi.responses import StreamingResponse
 from typing import List, Optional
 import os
 import uuid
 import json
+import csv
+import io
 from datetime import datetime
 from database import get_db
 from models import ReportOut, ReportStatus, ReportUpdate, UserRole
@@ -39,6 +42,10 @@ async def create_report(
     aiConfidence: float = Form(...),
     aiDetections: str = Form("[]"),
     aiExplanation: str = Form(""),
+    protocolFollowed: bool = Form(True),
+    suggestedDepartment: str = Form(""),
+    recommendedResponseTime: str = Form(""),
+    complaintText: str = Form(""),
     file: Optional[UploadFile] = File(None),
     db=Depends(get_db),
     current_user=Depends(get_current_user),
@@ -103,6 +110,10 @@ async def create_report(
         "notes": None,
         "scheduledDate": None,
         "priorityScore": priority_score,
+        "protocolFollowed": protocolFollowed,
+        "suggestedDepartment": suggestedDepartment,
+        "recommendedResponseTime": recommendedResponseTime,
+        "complaintText": complaintText,
     }
 
     await db.reports.insert_one(new_report)
@@ -198,3 +209,71 @@ async def update_report(
             await create_notification(db, report["userId"], title, message, ntype, report_id)
 
     return format_report(updated)
+
+
+@router.get("/export/csv")
+async def export_reports_csv(
+    status: Optional[str] = None,
+    damageType: Optional[str] = None,
+    db=Depends(get_db),
+    current_user=Depends(get_current_user),
+):
+    if current_user["role"] not in (UserRole.ADMIN.value, UserRole.INSPECTOR.value):
+        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Admin or inspector access required")
+
+    query = {}
+    if status and status != "all":
+        query["status"] = status
+    if damageType and damageType != "all":
+        query["damageType"] = damageType
+
+    cursor = db.reports.find(query).sort("createdAt", -1)
+    reports = await cursor.to_list(length=1000)
+
+    # Create CSV in memory
+    output = io.StringIO()
+    writer = csv.writer(output)
+    
+    # Write header
+    writer.writerow([
+        "ID", "User ID", "User Name", "Location", "City", "Address",
+        "Damage Type", "Severity", "Status", "AI Confidence",
+        "Protocol Followed", "Suggested Department", "Recommended Response Time",
+        "Assigned To", "Scheduled Date", "Notes", "Created At", "Updated At"
+    ])
+    
+    # Write data rows
+    for report in reports:
+        writer.writerow([
+            report.get("_id", ""),
+            report.get("userId", ""),
+            report.get("userName", ""),
+            f"{report.get('location', {}).get('lat', '')}, {report.get('location', {}).get('lng', '')}",
+            report.get("location", {}).get("city", ""),
+            report.get("location", {}).get("address", ""),
+            report.get("damageType", ""),
+            report.get("severity", ""),
+            report.get("status", ""),
+            report.get("aiConfidence", ""),
+            report.get("protocolFollowed", ""),
+            report.get("suggestedDepartment", ""),
+            report.get("recommendedResponseTime", ""),
+            report.get("assignedTo", ""),
+            report.get("scheduledDate", ""),
+            report.get("notes", ""),
+            report.get("createdAt", ""),
+            report.get("updatedAt", ""),
+        ])
+    
+    output.seek(0)
+    
+    # Create streaming response
+    response = StreamingResponse(
+        io.BytesIO(output.getvalue().encode('utf-8')),
+        media_type="text/csv",
+        headers={
+            "Content-Disposition": f"attachment; filename=reports_export_{datetime.utcnow().strftime('%Y%m%d_%H%M%S')}.csv"
+        }
+    )
+    
+    return response

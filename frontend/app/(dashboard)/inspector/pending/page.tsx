@@ -147,6 +147,34 @@ export default function PendingReportsPage() {
                       </div>
                     ))}
                     <p className="text-sm text-ink-secondary">{report.aiExplanation}</p>
+                    
+                    <div className="mt-4 space-y-2 rounded-xl border border-line bg-surface-muted/30 p-3">
+                      <div className="flex items-center justify-between">
+                        <span className="text-xs font-semibold text-muted">Protocol Followed</span>
+                        <span className={`text-xs font-semibold ${report.protocolFollowed ? 'text-success' : 'text-danger'}`}>
+                          {report.protocolFollowed ? 'Yes' : 'No'}
+                        </span>
+                      </div>
+                      {report.suggestedDepartment && (
+                        <div className="flex items-center justify-between">
+                          <span className="text-xs font-semibold text-muted">Suggested Department</span>
+                          <span className="text-xs font-semibold text-ink">{report.suggestedDepartment}</span>
+                        </div>
+                      )}
+                      {report.recommendedResponseTime && (
+                        <div className="flex items-center justify-between">
+                          <span className="text-xs font-semibold text-muted">Recommended Response</span>
+                          <span className="text-xs font-semibold text-accent-600">{report.recommendedResponseTime}</span>
+                        </div>
+                      )}
+                    </div>
+                    
+                    {report.complaintText && (
+                      <div className="mt-3 rounded-xl border border-line bg-surface-muted/30 p-3">
+                        <p className="text-xs font-semibold text-muted mb-1">Complaint Description</p>
+                        <p className="text-sm text-ink-secondary">{report.complaintText}</p>
+                      </div>
+                    )}
                   </CardContent>
                 </Card>
 

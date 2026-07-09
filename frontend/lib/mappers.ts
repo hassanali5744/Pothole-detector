@@ -38,6 +38,15 @@ export function mapReport(raw: Record<string, unknown>): DamageReport {
     assignedTo: raw.assignedTo ? String(raw.assignedTo) : undefined,
     notes: raw.notes ? String(raw.notes) : undefined,
     scheduledDate: raw.scheduledDate ? String(raw.scheduledDate) : undefined,
+    protocolFollowed: raw.protocolFollowed !== undefined ? Boolean(raw.protocolFollowed) : undefined,
+    suggestedDepartment: raw.suggestedDepartment ? String(raw.suggestedDepartment) : undefined,
+    recommendedResponseTime: raw.recommendedResponseTime ? String(raw.recommendedResponseTime) : undefined,
+    complaintText: raw.complaintText ? String(raw.complaintText) : undefined,
+    duplicateCheck: raw.duplicateCheck ? {
+      isDuplicate: Boolean((raw.duplicateCheck as Record<string, unknown>).isDuplicate),
+      similarityScore: Number((raw.duplicateCheck as Record<string, unknown>).similarityScore),
+      existingId: (raw.duplicateCheck as Record<string, unknown>).existingId ? String((raw.duplicateCheck as Record<string, unknown>).existingId) : undefined,
+    } : undefined,
   };
 }
 

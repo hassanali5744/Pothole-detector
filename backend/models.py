@@ -77,6 +77,10 @@ class ReportCreate(BaseModel):
     aiConfidence: float
     aiDetections: List[AIDetectionSchema]
     aiExplanation: str
+    protocolFollowed: Optional[bool] = None
+    suggestedDepartment: Optional[str] = None
+    recommendedResponseTime: Optional[str] = None
+    complaintText: Optional[str] = None
 
 class ReportOut(BaseModel):
     id: str = Field(..., alias="_id")
@@ -95,6 +99,10 @@ class ReportOut(BaseModel):
     assignedTo: Optional[str] = None
     notes: Optional[str] = None
     scheduledDate: Optional[str] = None
+    protocolFollowed: Optional[bool] = None
+    suggestedDepartment: Optional[str] = None
+    recommendedResponseTime: Optional[str] = None
+    complaintText: Optional[str] = None
 
     class Config:
         populate_by_name = True

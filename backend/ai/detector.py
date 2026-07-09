@@ -1,12 +1,12 @@
 """
 Road damage detection pipeline.
 
-Supports:
-1. Fine-tuned YOLO model (backend/models/road_damage.pt) when available
-2. OpenCV heuristic fallback for development/demo
+Now uses production-ready AI services:
+- VisionService: YOLOv11/Florence-2 for image analysis
+- LLMService: GPT-4/Claude/Gemini for protocol, severity, department
+- EmbeddingService: Duplicate detection with embeddings
 
-Expected YOLO class names:
-  pothole, crack, faded_markings, waterlogging, debris
+Fallback to heuristic methods if AI services unavailable.
 """
 
 from __future__ import annotations
@@ -22,6 +22,16 @@ import numpy as np
 from PIL import Image
 
 from config import YOLO_MODEL_PATH, AI_CONFIDENCE_THRESHOLD, AI_REJECTION_THRESHOLD
+
+# Import new AI services
+try:
+    from ai_service.vision_service import VisionService, Detection as VisionDetection
+    from ai_service.llm_service import LLMService, ProtocolCheckResult, SeverityClassification, DepartmentRecommendation, RepairEstimate
+    from ai_service.embedding_service import EmbeddingService, DuplicateCheckResult
+    AI_SERVICES_AVAILABLE = True
+except ImportError:
+    AI_SERVICES_AVAILABLE = False
+    logging.warning("AI services not available, using fallback methods")
 
 logger = logging.getLogger(__name__)
 
@@ -53,10 +63,41 @@ class AnalysisResult:
     explanation: str = ""
     rejection_reason: Optional[str] = None
     model_used: str = "heuristic"
+    protocol_followed: bool = True
+    protocol_reason: str = ""
+    suggested_department: str = ""
+    recommended_response_time: str = ""
+    duplicate_check: Optional[dict] = None
 
 
 _yolo_model = None
 _yolo_load_attempted = False
+
+# Initialize AI services
+_vision_service = None
+_llm_service = None
+_embedding_service = None
+
+
+def _get_ai_services():
+    """Get or initialize AI services."""
+    global _vision_service, _llm_service, _embedding_service
+    
+    if not AI_SERVICES_AVAILABLE:
+        return None, None, None
+    
+    try:
+        if _vision_service is None:
+            _vision_service = VisionService()
+        if _llm_service is None:
+            _llm_service = LLMService()
+        if _embedding_service is None:
+            _embedding_service = EmbeddingService()
+        
+        return _vision_service, _llm_service, _embedding_service
+    except Exception as e:
+        logger.warning(f"Failed to initialize AI services: {e}")
+        return None, None, None
 
 
 def _load_yolo():
@@ -260,8 +301,8 @@ def _detect_with_heuristics(img: np.ndarray) -> list[Detection]:
     return sorted(detections, key=lambda d: d.confidence, reverse=True)
 
 
-def analyze_image_bytes(file_bytes: bytes, filename: str = "") -> AnalysisResult:
-    """Run full pipeline: validate → detect → accept/reject."""
+async def analyze_image_bytes(file_bytes: bytes, filename: str = "", complaint_text: str = "", location: str = "") -> AnalysisResult:
+    """Run full pipeline using production AI services with fallback to heuristics."""
     if not file_bytes:
         return AnalysisResult(
             accepted=False,
@@ -278,6 +319,156 @@ def analyze_image_bytes(file_bytes: bytes, filename: str = "") -> AnalysisResult
             rejection_reason="Video analysis is not supported yet. Please upload a photo of the road damage.",
         )
 
+    # Try to use new AI services
+    vision_service, llm_service, embedding_service = _get_ai_services()
+    
+    if vision_service and llm_service:
+        return await _analyze_with_ai_services(
+            file_bytes, filename, complaint_text, location,
+            vision_service, llm_service, embedding_service
+        )
+    
+    # Fallback to original heuristic method
+    return _analyze_with_heuristics(file_bytes, filename, complaint_text, location)
+
+
+async def _analyze_with_ai_services(
+    file_bytes: bytes,
+    filename: str,
+    complaint_text: str,
+    location: str,
+    vision_service,
+    llm_service,
+    embedding_service
+) -> AnalysisResult:
+    """Analyze image using production AI services."""
+    try:
+        # Step 1: Vision analysis
+        vision_result = vision_service.analyze_image(file_bytes, filename)
+        
+        if not vision_result.accepted:
+            return AnalysisResult(
+                accepted=False,
+                is_road_damage=False,
+                rejection_reason=vision_result.rejection_reason,
+                model_used=vision_result.model_used,
+            )
+        
+        # Convert vision detections to detector format
+        detections = []
+        for vd in vision_result.detections:
+            severity = await _get_severity_from_llm(
+                llm_service, complaint_text, vd.damage_type, 
+                vd.area_meters, vd.confidence, location
+            )
+            
+            detections.append(Detection(
+                damage_type=vd.damage_type,
+                confidence=vd.confidence,
+                severity=severity,
+                explanation=vd.explanation,
+                bounding_box={"x1": vd.bounding_box[0], "y1": vd.bounding_box[1], 
+                           "x2": vd.bounding_box[2], "y2": vd.bounding_box[3]} if vd.bounding_box else None
+            ))
+        
+        if not detections:
+            return AnalysisResult(
+                accepted=False,
+                is_road_damage=False,
+                rejection_reason="No road damage detected",
+                model_used=vision_result.model_used,
+            )
+        
+        best = detections[0]
+        
+        # Step 2: Protocol compliance check with LLM
+        protocol_result = await llm_service.check_protocol_compliance(
+            complaint_text, best.damage_type, location
+        )
+        
+        # Step 3: Department recommendation with LLM
+        department_result = await llm_service.recommend_department(
+            best.damage_type, best.severity, complaint_text, location
+        )
+        
+        # Step 4: Repair estimate with LLM
+        repair_estimate = await llm_service.estimate_repair(
+            best.severity, best.damage_type, 
+            vision_result.detections[0].area_meters, complaint_text
+        )
+        
+        # Step 5: Duplicate check with embeddings
+        duplicate_result = None
+        if embedding_service and complaint_text:
+            duplicate_result = await embedding_service.check_duplicate(
+                complaint_text, best.damage_type, location
+            )
+        
+        # Generate explanation
+        explanation = (
+            f"Road damage confirmed: {best.damage_type.replace('_', ' ')} detected with "
+            f"{best.confidence * 100:.0f}% confidence. "
+            f"Severity assessed as {best.severity}. "
+            f"Report will be prioritized for inspector review."
+        )
+        
+        return AnalysisResult(
+            accepted=True,
+            is_road_damage=True,
+            detections=detections[:3],
+            explanation=explanation,
+            model_used=vision_result.model_used,
+            protocol_followed=protocol_result.follows_protocol,
+            protocol_reason=protocol_result.explanation,
+            suggested_department=department_result.department,
+            recommended_response_time=repair_estimate.response_time,
+            duplicate_check={
+                "is_duplicate": duplicate_result.is_duplicate if duplicate_result else False,
+                "similarity_score": duplicate_result.similarity_score if duplicate_result else 0.0,
+                "existing_id": duplicate_result.existing_report_id if duplicate_result else None
+            } if duplicate_result else None
+        )
+        
+    except Exception as e:
+        logger.error(f"AI service analysis failed: {e}")
+        # Fallback to heuristics
+        return _analyze_with_heuristics(file_bytes, filename, complaint_text, location)
+
+
+async def _get_severity_from_llm(
+    llm_service,
+    complaint_text: str,
+    damage_type: str,
+    damage_size: Optional[float],
+    confidence: float,
+    location: str
+) -> str:
+    """Get severity classification from LLM."""
+    try:
+        severity_result = await llm_service.classify_severity(
+            complaint_text, damage_type, damage_size, confidence, location
+        )
+        return severity_result.severity
+    except Exception as e:
+        logger.warning(f"LLM severity classification failed: {e}")
+        # Fallback to confidence-based
+        if confidence >= 0.82:
+            return "critical"
+        elif confidence >= 0.65:
+            return "high"
+        elif confidence >= 0.45:
+            return "medium"
+        else:
+            return "low"
+
+
+def _analyze_with_heuristics(
+    file_bytes: bytes,
+    filename: str,
+    complaint_text: str,
+    location: str
+) -> AnalysisResult:
+    """Analyze image using heuristic methods (fallback)."""
     try:
         img = _read_image(file_bytes)
     except ValueError as exc:
@@ -324,6 +515,15 @@ def analyze_image_bytes(file_bytes: bytes, filename: str = "") -> AnalysisResult
             model_used=model_used,
         )
 
+    # Protocol compliance check (fallback)
+    protocol_followed, protocol_reason = _check_protocol_compliance(complaint_text, best.damage_type)
+    
+    # Suggest department based on damage type (fallback)
+    suggested_department = _suggest_department(best.damage_type, best.severity)
+    
+    # Recommend response time based on severity (fallback)
+    recommended_response_time = _recommend_response_time(best.severity)
+
     primary = best.damage_type.replace("_", " ")
     explanation = (
         f"Road damage confirmed: {primary} detected with {best.confidence * 100:.0f}% confidence. "
@@ -337,7 +537,67 @@ def analyze_image_bytes(file_bytes: bytes, filename: str = "") -> AnalysisResult
         detections=detections[:3],
         explanation=explanation,
         model_used=model_used,
+        protocol_followed=protocol_followed,
+        protocol_reason=protocol_reason,
+        suggested_department=suggested_department,
+        recommended_response_time=recommended_response_time,
     )
+
+
+def _check_protocol_compliance(complaint_text: str, damage_type: str) -> tuple[bool, str]:
+    """Check if complaint follows official reporting protocol."""
+    if not complaint_text or len(complaint_text.strip()) < 10:
+        return False, "Complaint description is too brief. Please provide more details about the damage (size, location context, safety impact)."
+    
+    text_lower = complaint_text.lower()
+    
+    # Check for required elements based on damage type
+    required_keywords = {
+        "pothole": ["size", "depth", "location"],
+        "crack": ["length", "width", "pattern"],
+        "waterlogging": ["drainage", "depth", "area"],
+        "faded_markings": ["visibility", "lane", "markings"],
+        "debris": ["type", "quantity", "hazard"],
+    }
+    
+    keywords = required_keywords.get(damage_type, ["size", "location", "hazard"])
+    found_keywords = [kw for kw in keywords if kw in text_lower]
+    
+    if len(found_keywords) >= 2:
+        return True, "Complaint follows protocol with sufficient detail."
+    
+    return False, f"Complaint lacks required details. Please mention: {', '.join(keywords)}."
+
+
+def _suggest_department(damage_type: str, severity: str) -> str:
+    """Suggest responsible department based on damage type and severity."""
+    department_mapping = {
+        "pothole": "Road Maintenance Department",
+        "crack": "Road Maintenance Department",
+        "waterlogging": "Drainage & Sewer Department",
+        "faded_markings": "Traffic Engineering Department",
+        "debris": "Sanitation & Cleaning Department",
+    }
+    
+    base_dept = department_mapping.get(damage_type, "Road Maintenance Department")
+    
+    if severity == "critical":
+        return f"{base_dept} (Emergency Response)"
+    elif severity == "high":
+        return f"{base_dept} (Priority Queue)"
+    
+    return base_dept
+
+
+def _recommend_response_time(severity: str) -> str:
+    """Recommend response time based on severity."""
+    response_times = {
+        "critical": "Within 4 hours",
+        "high": "Within 24 hours",
+        "medium": "Within 3 business days",
+        "low": "Within 7 business days",
+    }
+    return response_times.get(severity, "Within 7 business days")
 
 
 def detection_to_dict(d: Detection) -> dict:

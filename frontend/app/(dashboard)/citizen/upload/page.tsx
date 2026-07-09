@@ -27,6 +27,10 @@ interface AnalyzeResponse {
   modelUsed: string;
   detections: AIResult[];
   explanation: string;
+  protocolFollowed: boolean;
+  protocolReason: string;
+  suggestedDepartment: string;
+  recommendedResponseTime: string;
 }
 
 export default function UploadPage() {
@@ -34,16 +38,23 @@ export default function UploadPage() {
   const [preview, setPreview] = useState<string | null>(null);
   const [address, setAddress] = useState("");
   const [city, setCity] = useState("New Delhi");
+  const [latitude, setLatitude] = useState(28.6139);
+  const [longitude, setLongitude] = useState(77.209);
+  const [complaintText, setComplaintText] = useState("");
   const [analyzing, setAnalyzing] = useState(false);
   const [aiResults, setAiResults] = useState<AIResult[] | null>(null);
   const [aiExplanation, setAiExplanation] = useState("");
   const [modelUsed, setModelUsed] = useState("");
+  const [protocolFollowed, setProtocolFollowed] = useState(true);
+  const [suggestedDepartment, setSuggestedDepartment] = useState("");
+  const [recommendedResponseTime, setRecommendedResponseTime] = useState("");
   const [rejected, setRejected] = useState(false);
   const [rejectionReason, setRejectionReason] = useState("");
   const [submitted, setSubmitted] = useState(false);
   const [dragOver, setDragOver] = useState(false);
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState("");
+  const [gettingLocation, setGettingLocation] = useState(false);
 
   const handleFile = useCallback((f: File) => {
     if (!f.type.startsWith("image/")) {
@@ -59,6 +70,26 @@ export default function UploadPage() {
     setError("");
     setPreview(URL.createObjectURL(f));
   }, []);
+
+  const getCurrentLocation = () => {
+    setGettingLocation(true);
+    if (navigator.geolocation) {
+      navigator.geolocation.getCurrentPosition(
+        (position) => {
+          setLatitude(position.coords.latitude);
+          setLongitude(position.coords.longitude);
+          setGettingLocation(false);
+        },
+        (error) => {
+          setError("Unable to get your location. Using default coordinates.");
+          setGettingLocation(false);
+        }
+      );
+    } else {
+      setError("Geolocation is not supported by your browser.");
+      setGettingLocation(false);
+    }
+  };
 
   const onDrop = useCallback(
     (e: React.DragEvent) => {
@@ -81,11 +112,19 @@ export default function UploadPage() {
     try {
       const formData = new FormData();
       formData.append("file", file);
+      formData.append("complaintText", complaintText);
       const data = (await apiClient.postForm("/api/ai/analyze", formData)) as AnalyzeResponse;
 
       setAiResults(data.detections);
       setAiExplanation(data.explanation);
       setModelUsed(data.modelUsed);
+      setProtocolFollowed(data.protocolFollowed);
+      setSuggestedDepartment(data.suggestedDepartment);
+      setRecommendedResponseTime(data.recommendedResponseTime);
+      
+      if (!data.protocolFollowed) {
+        setError(data.protocolReason);
+      }
     } catch (err: unknown) {
       const message = err instanceof Error ? err.message : "AI analysis failed";
       setRejected(true);
@@ -106,8 +145,9 @@ export default function UploadPage() {
       formData.append("file", file);
       formData.append("address", address);
       formData.append("city", city);
-      formData.append("latitude", "28.6139");
-      formData.append("longitude", "77.209");
+      formData.append("latitude", latitude.toString());
+      formData.append("longitude", longitude.toString());
+      formData.append("complaintText", complaintText);
 
       const mainResult = aiResults[0];
       formData.append("damageType", mainResult.damageType);
@@ -115,6 +155,9 @@ export default function UploadPage() {
       formData.append("aiConfidence", mainResult.confidence.toString());
       formData.append("aiDetections", JSON.stringify(aiResults));
       formData.append("aiExplanation", aiExplanation || mainResult.explanation);
+      formData.append("protocolFollowed", protocolFollowed.toString());
+      formData.append("suggestedDepartment", suggestedDepartment);
+      formData.append("recommendedResponseTime", recommendedResponseTime);
 
       await apiClient.postForm("/api/reports", formData);
       setSubmitted(true);
@@ -239,6 +282,35 @@ export default function UploadPage() {
                 { value: "Gurgaon", label: "Gurgaon" },
                 { value: "Faridabad", label: "Faridabad" },
               ]}
+            />
+            <div className="sm:col-span-2">
+              <Button
+                type="button"
+                variant="outline"
+                onClick={getCurrentLocation}
+                disabled={gettingLocation}
+                className="w-full"
+              >
+                {gettingLocation ? "Getting Location..." : "Use Current GPS Location"}
+              </Button>
+              <p className="mt-1 text-xs text-muted">
+                Current coordinates: {latitude.toFixed(4)}, {longitude.toFixed(4)}
+              </p>
+            </div>
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardHeader>
+            <CardTitle className="text-base">Complaint Description</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <textarea
+              id="complaintText"
+              placeholder="Describe the road damage in detail (e.g., size, traffic impact, safety hazards)"
+              value={complaintText}
+              onChange={(e) => setComplaintText(e.target.value)}
+              className="w-full rounded-xl border border-line bg-surface p-3 text-sm text-ink placeholder:text-muted focus:border-accent-500 focus:outline-none focus:ring-2 focus:ring-accent-500/20 min-h-[100px] resize-y"
             />
           </CardContent>
         </Card>

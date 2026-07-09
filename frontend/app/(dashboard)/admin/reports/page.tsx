@@ -35,6 +35,28 @@ export default function AdminReportsPage() {
     load();
   }, [statusFilter, typeFilter]);
 
+  const handleExport = async () => {
+    try {
+      const params: Record<string, string> = {};
+      if (statusFilter !== "all") params.status = statusFilter;
+      if (typeFilter !== "all") params.damageType = typeFilter;
+      
+      const response = await apiClient.get("/api/reports/export/csv", { params });
+      
+      const blob = new Blob([response], { type: "text/csv" });
+      const url = window.URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = `reports_export_${new Date().toISOString().split("T")[0]}.csv`;
+      document.body.appendChild(a);
+      a.click();
+      window.URL.revokeObjectURL(url);
+      document.body.removeChild(a);
+    } catch (e) {
+      console.error("Export failed:", e);
+    }
+  };
+
   return (
     <RoleGuard allowedRoles={["admin"]}>
       <div className="space-y-6">
@@ -42,7 +64,7 @@ export default function AdminReportsPage() {
           title="All Reports"
           description="Manage and export all road damage reports."
         >
-          <Button variant="outline">
+          <Button variant="outline" onClick={handleExport}>
             <Download className="h-4 w-4" />
             Export CSV
           </Button>

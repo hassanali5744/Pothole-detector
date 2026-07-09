@@ -58,6 +58,15 @@ export interface DamageReport {
   assignedTo?: string;
   notes?: string;
   scheduledDate?: string;
+  protocolFollowed?: boolean;
+  suggestedDepartment?: string;
+  recommendedResponseTime?: string;
+  complaintText?: string;
+  duplicateCheck?: {
+    isDuplicate: boolean;
+    similarityScore: number;
+    existingId?: string;
+  };
 }
 
 export interface Notification {
