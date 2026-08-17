@@ -23,6 +23,10 @@ const nextConfig: NextConfig = {
         hostname: "backend",
         port: "8000",
       },
+      {
+        protocol: "https",
+        hostname: "**", // Allow all HTTPS hosts for production
+      },
     ],
   },
 };

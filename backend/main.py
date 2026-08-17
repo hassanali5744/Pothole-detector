@@ -28,12 +28,24 @@ app = FastAPI(
     lifespan=lifespan,
 )
 
+# Get allowed origins from environment or use defaults
+frontend_url = os.getenv("FRONTEND_URL", "")
+allowed_origins = [
+    "http://localhost:3000",
+    "http://127.0.0.1:3000",
+]
+
+# Add production frontend URL if set
+if frontend_url:
+    allowed_origins.append(frontend_url)
+
+# For Railway/Vercel/Render, also allow the service URLs
+if os.getenv("RAILWAY_ENVIRONMENT") or os.getenv("VERCEL") or os.getenv("RENDER"):
+    allowed_origins.append("*")
+
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=[
-        "http://localhost:3000",
-        "http://127.0.0.1:3000",
-    ],
+    allow_origins=allowed_origins,
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
