@@ -9,6 +9,59 @@ services:
     volumes:
       - mongo_data:/data/db
     restart: unless-stopped
+    networks:
+      - roadvision-network
+
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: roadvision-backend
+    ports:
+      - "8000:8000"
+    environment:
+      - MONGODB_URL=mongodb://mongodb:27017
+      - DATABASE_NAME=roadvision
+      - JWT_SECRET_KEY=${JWT_SECRET_KEY:-roadvision_super_secret_jwt_key_2026_change_me}
+      - LLM_PROVIDER=${LLM_PROVIDER:-openai}
+      - LLM_MODEL=${LLM_MODEL:-gpt-4-turbo}
+      - OPENAI_API_KEY=${OPENAI_API_KEY:-}
+      - ANTHROPIC_API_KEY=${ANTHROPIC_API_KEY:-}
+      - OPENROUTER_API_KEY=${OPENROUTER_API_KEY:-}
+      - VISION_MODEL=${VISION_MODEL:-yolov11}
+      - AI_CONFIDENCE_THRESHOLD=${AI_CONFIDENCE_THRESHOLD:-0.45}
+      - AI_REJECTION_THRESHOLD=${AI_REJECTION_THRESHOLD:-0.40}
+    volumes:
+      - backend_uploads:/app/static/uploads
+      - backend_models:/app/models
+      - backend_vector_db:/app/vector_db
+    depends_on:
+      - mongodb
+    restart: unless-stopped
+    networks:
+      - roadvision-network
+
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    container_name: roadvision-frontend
+    ports:
+      - "3000:3000"
+    environment:
+      - NEXT_PUBLIC_API_URL=http://localhost:8000
+    depends_on:
+      - backend
+    restart: unless-stopped
+    networks:
+      - roadvision-network
 
 volumes:
   mongo_data:
+  backend_uploads:
+  backend_models:
+  backend_vector_db:
+
+networks:
+  roadvision-network:
+    driver: bridge

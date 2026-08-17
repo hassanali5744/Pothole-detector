@@ -47,6 +47,8 @@ export function mapReport(raw: Record<string, unknown>): DamageReport {
       similarityScore: Number((raw.duplicateCheck as Record<string, unknown>).similarityScore),
       existingId: (raw.duplicateCheck as Record<string, unknown>).existingId ? String((raw.duplicateCheck as Record<string, unknown>).existingId) : undefined,
     } : undefined,
+    severityPercentage: raw.severityPercentage ? Number(raw.severityPercentage) : undefined,
+    priority: raw.priority ? String(raw.priority) : undefined,
   };
 }
 

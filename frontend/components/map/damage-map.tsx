@@ -3,7 +3,7 @@
 import { useMemo } from "react";
 import dynamic from "next/dynamic";
 import type { DamageReport, DamageType, ReportStatus } from "@/lib/types";
-import { DAMAGE_TYPE_LABELS, STATUS_LABELS } from "@/lib/constants";
+import { DAMAGE_TYPE_LABELS, STATUS_LABELS, SEVERITY_LABELS } from "@/lib/constants";
 
 const MapContainer = dynamic(
   () => import("react-leaflet").then((m) => m.MapContainer),
@@ -22,12 +22,15 @@ const Popup = dynamic(
   { ssr: false }
 );
 
-const severityColors: Record<string, string> = {
-  low: "#64748b",
-  medium: "#eab308",
-  high: "#f97316",
-  critical: "#ef4444",
-};
+function getSeverityColor(severity: string): string {
+  const colorMap: Record<string, string> = {
+    low: "#64748b",
+    medium: "#eab308",
+    high: "#f97316",
+    critical: "#ef4444",
+  };
+  return colorMap[severity] || "#64748b";
+}
 
 interface DamageMapProps {
   reports: DamageReport[];
@@ -79,8 +82,8 @@ export function DamageMap({
             center={[report.location.lat, report.location.lng]}
             radius={10}
             pathOptions={{
-              color: severityColors[report.severity],
-              fillColor: severityColors[report.severity],
+              color: getSeverityColor(report.severity),
+              fillColor: getSeverityColor(report.severity),
               fillOpacity: 0.7,
             }}
           >
@@ -90,7 +93,7 @@ export function DamageMap({
                   {DAMAGE_TYPE_LABELS[report.damageType]}
                 </p>
                 <p>{report.location.address}</p>
-                <p className="capitalize">Severity: {report.severity}</p>
+                <p>Severity: {SEVERITY_LABELS[report.severity]}</p>
                 <p>Status: {STATUS_LABELS[report.status]}</p>
               </div>
             </Popup>

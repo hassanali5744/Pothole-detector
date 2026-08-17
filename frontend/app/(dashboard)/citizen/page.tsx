@@ -14,6 +14,7 @@ import { apiClient } from "@/lib/api-client";
 import { mapReports, mapNotifications } from "@/lib/mappers";
 import { useNotificationStore } from "@/lib/store/notification-store";
 import type { DamageReport, Notification } from "@/lib/types";
+import { SlideInUp, FadeIn, StaggerChildren, ScaleIn, HoverLift } from "@/components/animations";
 
 export default function CitizenDashboard() {
   const { user } = useAuthStore();
@@ -89,94 +90,109 @@ export default function CitizenDashboard() {
 
   return (
     <RoleGuard allowedRoles={["citizen"]}>
-      <div className="space-y-8">
-        <PageHeader
-          title={`Welcome back, ${user?.name.split(" ")[0]}`}
-          description="Track your road damage reports and complaints."
-        >
-          <Link href="/citizen/upload">
-            <Button>
-              <Upload className="h-4 w-4" />
-              Report Damage
-            </Button>
-          </Link>
-        </PageHeader>
+      <SlideInUp duration={0.5}>
+        <div className="space-y-8">
+          <FadeIn duration={0.6}>
+            <PageHeader
+              title={`Welcome back, ${user?.name.split(" ")[0]}`}
+              description="Track your road damage reports and complaints."
+            >
+              <Link href="/citizen/upload">
+                <Button>
+                  <Upload className="h-4 w-4" />
+                  Report Damage
+                </Button>
+              </Link>
+            </PageHeader>
+          </FadeIn>
 
-        {loading ? (
-          <div className="flex h-32 items-center justify-center">
-            <Loader2 className="h-8 w-8 animate-spin text-accent-600" />
-          </div>
-        ) : (
-          <>
-            <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-              <StatCard title="Total Reports" value={reports.length} icon={FileText} />
-              <StatCard title="Pending Review" value={pending} icon={Clock} />
-              <StatCard title="In Progress" value={inProgress} icon={Upload} />
-              <StatCard title="Completed" value={completed} icon={Bell} />
+          {loading ? (
+            <div className="flex h-32 items-center justify-center">
+              <Loader2 className="h-8 w-8 animate-spin text-accent-600" />
             </div>
+          ) : (
+            <>
+              <StaggerChildren staggerDelay={0.1} className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+                <HoverLift>
+                  <StatCard title="Total Reports" value={reports.length} icon={FileText} />
+                </HoverLift>
+                <HoverLift>
+                  <StatCard title="Pending Review" value={pending} icon={Clock} />
+                </HoverLift>
+                <HoverLift>
+                  <StatCard title="In Progress" value={inProgress} icon={Upload} />
+                </HoverLift>
+                <HoverLift>
+                  <StatCard title="Completed" value={completed} icon={Bell} />
+                </HoverLift>
+              </StaggerChildren>
 
-            <div className="grid gap-8 lg:grid-cols-3">
-              <div className="lg:col-span-2">
-                <div className="mb-4 flex items-center justify-between">
-                  <h2 className="font-display text-lg font-semibold text-ink">Recent Reports</h2>
-                  <Link href="/citizen/reports" className="text-sm font-semibold text-accent-600 hover:text-accent-700">
-                    View all
-                  </Link>
-                </div>
-                <div className="grid gap-4 sm:grid-cols-2">
-                  {reports.slice(0, 4).map((report) => (
-                    <ReportCard key={report.id} report={report} />
-                  ))}
-                </div>
-              </div>
+              <div className="grid gap-8 lg:grid-cols-3">
+                <FadeIn duration={0.5} delay={0.2} className="lg:col-span-2">
+                  <div className="mb-4 flex items-center justify-between">
+                    <h2 className="font-display text-lg font-semibold text-ink">Recent Reports</h2>
+                    <Link href="/citizen/reports" className="text-sm font-semibold text-accent-600 hover:text-accent-700">
+                      View all
+                    </Link>
+                  </div>
+                  <StaggerChildren staggerDelay={0.08} className="grid gap-4 sm:grid-cols-2">
+                    {reports.slice(0, 4).map((report) => (
+                      <ReportCard key={report.id} report={report} />
+                    ))}
+                  </StaggerChildren>
+                </FadeIn>
 
-              <div>
-                <div className="mb-4 flex items-center justify-between">
-                  <h2 className="font-display text-lg font-semibold text-ink">Notifications</h2>
-                  <Link href="/citizen/notifications" className="text-sm font-semibold text-accent-600 hover:text-accent-700">
-                    View all
-                  </Link>
-                </div>
-                <div className="space-y-3">
-                  {notifications.slice(0, 3).map((n) => (
-                    <div
-                      key={n.id}
-                      onClick={() => handleNotificationClick(n.id, n.read)}
-                      className={`group relative flex flex-col rounded-xl border p-4 transition-colors cursor-pointer ${
-                        n.read ? "border-line bg-surface" : "border-accent-200 bg-accent-50/60"
-                      }`}
-                    >
-                      <div className="min-w-0 pr-6">
-                        <p className={`text-sm text-ink ${n.read ? "font-normal" : "font-semibold"}`}>
-                          {n.title}
-                        </p>
-                        <p className="mt-1 text-xs leading-relaxed text-muted">{n.message}</p>
-                        <p className="mt-2 text-xs text-muted/70">{formatDateTime(n.createdAt)}</p>
-                      </div>
-
-                      {/* Small Cross Dismiss Button */}
-                      <button
-                        onClick={(e) => handleDismiss(e, n.id)}
-                        className="absolute right-3 top-3 rounded-md p-1 text-muted/40 hover:bg-line/40 hover:text-ink transition-colors opacity-0 group-hover:opacity-100 focus:opacity-100"
-                        aria-label="Dismiss notification"
-                      >
-                        <X className="h-3.5 w-3.5" />
-                      </button>
+                <FadeIn duration={0.5} delay={0.3}>
+                  <div>
+                    <div className="mb-4 flex items-center justify-between">
+                      <h2 className="font-display text-lg font-semibold text-ink">Notifications</h2>
+                      <Link href="/citizen/notifications" className="text-sm font-semibold text-accent-600 hover:text-accent-700">
+                        View all
+                      </Link>
                     </div>
-                  ))}
-                  
-                  {notifications.length === 0 && (
-                    <div className="rounded-xl border border-dashed border-line-strong py-8 text-center">
-                      <Bell className="mx-auto h-6 w-6 text-line-strong" />
-                      <p className="mt-2 text-xs text-muted">No notifications yet.</p>
-                    </div>
-                  )}
-                </div>
+                    <StaggerChildren staggerDelay={0.1} className="space-y-3">
+                      {notifications.slice(0, 3).map((n) => (
+                        <ScaleIn key={n.id} duration={0.3}>
+                          <div
+                            onClick={() => handleNotificationClick(n.id, n.read)}
+                            className={`group relative flex flex-col rounded-xl border p-4 transition-colors cursor-pointer ${
+                              n.read ? "border-line bg-surface" : "border-accent-200 bg-accent-50/60"
+                            }`}
+                          >
+                            <div className="min-w-0 pr-6">
+                              <p className={`text-sm text-ink ${n.read ? "font-normal" : "font-semibold"}`}>
+                                {n.title}
+                              </p>
+                              <p className="mt-1 text-xs leading-relaxed text-muted">{n.message}</p>
+                              <p className="mt-2 text-xs text-muted/70">{formatDateTime(n.createdAt)}</p>
+                            </div>
+
+                            {/* Small Cross Dismiss Button */}
+                            <button
+                              onClick={(e) => handleDismiss(e, n.id)}
+                              className="absolute right-3 top-3 rounded-md p-1 text-muted/40 hover:bg-line/40 hover:text-ink transition-colors opacity-0 group-hover:opacity-100 focus:opacity-100"
+                              aria-label="Dismiss notification"
+                            >
+                              <X className="h-3.5 w-3.5" />
+                            </button>
+                          </div>
+                        </ScaleIn>
+                      ))}
+                      
+                      {notifications.length === 0 && (
+                        <div className="rounded-xl border border-dashed border-line-strong py-8 text-center">
+                          <Bell className="mx-auto h-6 w-6 text-line-strong" />
+                          <p className="mt-2 text-xs text-muted">No notifications yet.</p>
+                        </div>
+                      )}
+                    </StaggerChildren>
+                  </div>
+                </FadeIn>
               </div>
-            </div>
-          </>
-        )}
-      </div>
+            </>
+          )}
+        </div>
+      </SlideInUp>
     </RoleGuard>
   );
 }

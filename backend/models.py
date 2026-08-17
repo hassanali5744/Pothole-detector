@@ -68,6 +68,8 @@ class AIDetectionSchema(BaseModel):
     confidence: float
     severity: SeverityLevel
     explanation: str
+    severityPercentage: Optional[float] = None  # 0-100 score from Gemini
+    priority: Optional[str] = None  # "critical", "high", "medium", "low"
 
 # Report Models
 class ReportCreate(BaseModel):
@@ -103,6 +105,8 @@ class ReportOut(BaseModel):
     suggestedDepartment: Optional[str] = None
     recommendedResponseTime: Optional[str] = None
     complaintText: Optional[str] = None
+    severityPercentage: Optional[float] = None
+    priority: Optional[str] = None
 
     class Config:
         populate_by_name = True

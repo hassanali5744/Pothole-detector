@@ -46,6 +46,8 @@ async def create_report(
     suggestedDepartment: str = Form(""),
     recommendedResponseTime: str = Form(""),
     complaintText: str = Form(""),
+    severityPercentage: float = Form(0.0),
+    priority: str = Form("medium"),
     file: Optional[UploadFile] = File(None),
     db=Depends(get_db),
     current_user=Depends(get_current_user),
@@ -82,7 +84,14 @@ async def create_report(
 
     severity = detections_list[0].get("severity", severity)
     damageType = detections_list[0].get("damageType", damageType)
-    priority_score = SEVERITY_PRIORITY.get(severity, 1)
+    
+    # Use AI-provided priority if available, otherwise map from severity
+    ai_priority = detections_list[0].get("priority", priority) if detections_list else priority
+    ai_severity_percentage = detections_list[0].get("severityPercentage", severityPercentage) if detections_list else severityPercentage
+    
+    # Calculate priority score based on AI priority
+    priority_mapping = {"critical": 4, "high": 3, "medium": 2, "low": 1}
+    priority_score = priority_mapping.get(ai_priority.lower(), priority_mapping.get(severity, 2))
 
     report_id = f"r{uuid.uuid4().hex[:8]}"
     now_iso = datetime.utcnow().isoformat() + "Z"
@@ -114,6 +123,8 @@ async def create_report(
         "suggestedDepartment": suggestedDepartment,
         "recommendedResponseTime": recommendedResponseTime,
         "complaintText": complaintText,
+        "severityPercentage": ai_severity_percentage,
+        "priority": ai_priority,
     }
 
     await db.reports.insert_one(new_report)

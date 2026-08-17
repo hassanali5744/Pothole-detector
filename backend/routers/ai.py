@@ -23,6 +23,15 @@ async def analyze_image(
     content = await file.read()
     result = await analyze_image_bytes(content, filename=file.filename or "", complaint_text=complaintText, location=location)
 
+    # Extract Gemini-specific data if available
+    severity_percentage = None
+    priority = None
+    if result.model_used == "gemini_api" and result.detections:
+        # Extract severity percentage from confidence (converted back to percentage)
+        severity_percentage = result.detections[0].confidence * 100 if result.detections else None
+        # Determine priority based on 70% threshold
+        priority = "high" if severity_percentage and severity_percentage >= 70 else "low"
+
     response = {
         "accepted": result.accepted,
         "isRoadDamage": result.is_road_damage,
@@ -35,6 +44,8 @@ async def analyze_image(
         "suggestedDepartment": result.suggested_department,
         "recommendedResponseTime": result.recommended_response_time,
         "duplicateCheck": result.duplicate_check,
+        "severityPercentage": severity_percentage,
+        "priority": priority,
     }
 
     if not result.accepted:

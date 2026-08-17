@@ -19,7 +19,7 @@ export default function InspectorChatPage() {
   const [messages, setMessages] = useState<ChatMessage[]>([
     {
       role: "assistant",
-      content: "Hello! I'm your AI assistant for road damage inspection. I can help you with:\n\n• Finding critical complaints\n• Summarizing unresolved reports\n• Checking department workloads\n• Identifying duplicate complaints\n\nHow can I assist you today?",
+      content: "Hello! I'm your AI assistant for road damage inspection. How can I assist you today?",
       timestamp: new Date().toISOString(),
     },
   ]);
@@ -85,12 +85,7 @@ export default function InspectorChatPage() {
     }
   };
 
-  const suggestedQuestions = [
-    "Show today's critical complaints",
-    "Summarize unresolved reports",
-    "Which department has the highest workload?",
-    "Find duplicate complaints",
-  ];
+  const suggestedQuestions: string[] = [];
 
   return (
     <RoleGuard allowedRoles={["inspector", "admin"]}>
@@ -149,28 +144,6 @@ export default function InspectorChatPage() {
                 <div ref={messagesEndRef} />
               </div>
 
-              {/* Suggested Questions */}
-              {messages.length === 1 && (
-                <div className="border-t border-line p-4">
-                  <p className="mb-2 text-xs font-semibold text-muted">
-                    Suggested questions:
-                  </p>
-                  <div className="flex flex-wrap gap-2">
-                    {suggestedQuestions.map((question) => (
-                      <Button
-                        key={question}
-                        variant="outline"
-                        size="sm"
-                        onClick={() => setInput(question)}
-                        className="text-xs"
-                      >
-                        {question}
-                      </Button>
-                    ))}
-                  </div>
-                </div>
-              )}
-
               {/* Input */}
               <div className="border-t border-line p-4">
                 <div className="flex gap-2">
@@ -185,7 +158,8 @@ export default function InspectorChatPage() {
                   <Button
                     onClick={handleSend}
                     disabled={loading || !input.trim()}
-                    size="icon"
+                    size="sm"
+                    className="h-10 w-10 p-0"
                   >
                     {loading ? (
                       <Loader2 className="h-4 w-4 animate-spin" />

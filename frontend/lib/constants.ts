@@ -1,6 +1,6 @@
 import type { DamageType, ReportStatus, SeverityLevel, UserRole } from "./types";
 
-export const APP_NAME = "RoadVision AI";
+export const APP_NAME = process.env.NEXT_PUBLIC_APP_NAME ?? "RoadVision AI";
 
 export const DAMAGE_TYPE_LABELS: Record<DamageType, string> = {
   pothole: "Pothole",

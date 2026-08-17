@@ -9,7 +9,7 @@ import { Select } from "@/components/ui/select";
 import { apiClient } from "@/lib/api-client";
 import { mapReports } from "@/lib/mappers";
 import type { DamageType, ReportStatus, DamageReport } from "@/lib/types";
-import { DAMAGE_TYPE_LABELS, STATUS_LABELS } from "@/lib/constants";
+import { DAMAGE_TYPE_LABELS, STATUS_LABELS, SEVERITY_LABELS } from "@/lib/constants";
 
 export default function MapPage() {
   const [filterType, setFilterType] = useState<DamageType | "all">("all");
@@ -61,17 +61,20 @@ export default function MapPage() {
         </div>
 
         <div className="flex flex-wrap gap-5 rounded-xl border border-line bg-surface-muted/50 px-4 py-3 text-xs">
-          {[
-            { color: "#7a7268", label: "Low" },
-            { color: "#b87333", label: "Medium" },
-            { color: "#c17f3a", label: "High" },
-            { color: "#9b2c2c", label: "Critical" },
-          ].map((item) => (
-            <div key={item.label} className="flex items-center gap-2">
-              <div className="h-3 w-3 rounded-full ring-2 ring-white" style={{ backgroundColor: item.color }} />
-              <span className="font-medium text-ink-secondary">{item.label} Severity</span>
-            </div>
-          ))}
+          {Object.entries(SEVERITY_LABELS).map(([severity, label]) => {
+            const colorMap: Record<string, string> = {
+              low: "#7a7268",
+              medium: "#b87333", 
+              high: "#c17f3a",
+              critical: "#9b2c2c"
+            };
+            return (
+              <div key={severity} className="flex items-center gap-2">
+                <div className="h-3 w-3 rounded-full ring-2 ring-white" style={{ backgroundColor: colorMap[severity] }} />
+                <span className="font-medium text-ink-secondary">{label} Severity</span>
+              </div>
+            );
+          })}
         </div>
 
         {loading ? (

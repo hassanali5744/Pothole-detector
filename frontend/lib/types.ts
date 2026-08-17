@@ -32,6 +32,8 @@ export interface AIDetection {
   severity: SeverityLevel;
   explanation: string;
   boundingBox?: { x: number; y: number; width: number; height: number };
+  severityPercentage?: number;
+  priority?: string;
 }
 
 export interface Location {
@@ -67,6 +69,8 @@ export interface DamageReport {
     similarityScore: number;
     existingId?: string;
   };
+  severityPercentage?: number;
+  priority?: string;
 }
 
 export interface Notification {

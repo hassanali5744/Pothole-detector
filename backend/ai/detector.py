@@ -28,6 +28,7 @@ try:
     from ai_service.vision_service import VisionService, Detection as VisionDetection
     from ai_service.llm_service import LLMService, ProtocolCheckResult, SeverityClassification, DepartmentRecommendation, RepairEstimate
     from ai_service.embedding_service import EmbeddingService, DuplicateCheckResult
+    from ai_service.gemini_service import GeminiService, GeminiAnalysisResult
     AI_SERVICES_AVAILABLE = True
 except ImportError:
     AI_SERVICES_AVAILABLE = False
@@ -77,14 +78,15 @@ _yolo_load_attempted = False
 _vision_service = None
 _llm_service = None
 _embedding_service = None
+_gemini_service = None
 
 
 def _get_ai_services():
     """Get or initialize AI services."""
-    global _vision_service, _llm_service, _embedding_service
+    global _vision_service, _llm_service, _embedding_service, _gemini_service
     
     if not AI_SERVICES_AVAILABLE:
-        return None, None, None
+        return None, None, None, None
     
     try:
         if _vision_service is None:
@@ -93,11 +95,13 @@ def _get_ai_services():
             _llm_service = LLMService()
         if _embedding_service is None:
             _embedding_service = EmbeddingService()
+        if _gemini_service is None:
+            _gemini_service = GeminiService()
         
-        return _vision_service, _llm_service, _embedding_service
+        return _vision_service, _llm_service, _embedding_service, _gemini_service
     except Exception as e:
         logger.warning(f"Failed to initialize AI services: {e}")
-        return None, None, None
+        return None, None, None, None
 
 
 def _load_yolo():
@@ -319,8 +323,15 @@ async def analyze_image_bytes(file_bytes: bytes, filename: str = "", complaint_t
             rejection_reason="Video analysis is not supported yet. Please upload a photo of the road damage.",
         )
 
-    # Try to use new AI services
-    vision_service, llm_service, embedding_service = _get_ai_services()
+    # Try to use new AI services with Gemini for severity detection
+    vision_service, llm_service, embedding_service, gemini_service = _get_ai_services()
+    
+    if gemini_service and gemini_service._is_available():
+        # Use Gemini API for severity detection (as requested)
+        return await _analyze_with_gemini(
+            file_bytes, filename, complaint_text, location,
+            gemini_service, vision_service, llm_service, embedding_service
+        )
     
     if vision_service and llm_service:
         return await _analyze_with_ai_services(
@@ -330,6 +341,128 @@ async def analyze_image_bytes(file_bytes: bytes, filename: str = "", complaint_t
     
     # Fallback to original heuristic method
     return _analyze_with_heuristics(file_bytes, filename, complaint_text, location)
+
+
+async def _analyze_with_gemini(
+    file_bytes: bytes,
+    filename: str,
+    complaint_text: str,
+    location: str,
+    gemini_service,
+    vision_service,
+    llm_service,
+    embedding_service
+) -> AnalysisResult:
+    """Analyze image using Gemini API for severity detection (70% threshold logic)."""
+    try:
+        # Step 1: Use Gemini API for severity analysis
+        gemini_result = await gemini_service.analyze_image_for_severity(
+            file_bytes, complaint_text
+        )
+        
+        if not gemini_result.is_road_damage:
+            return AnalysisResult(
+                accepted=False,
+                is_road_damage=False,
+                rejection_reason="Gemini API determined this is not road damage. Please upload a photo showing actual road defects.",
+                model_used="gemini_api",
+            )
+        
+        # Step 2: Use Gemini's severity level directly
+        severity_percentage = gemini_result.severity_percentage
+        severity_level = gemini_result.severity_level  # critical, high, medium, low
+        priority = gemini_result.suggested_priority  # critical, high, medium, low
+        
+        # Step 3: Create detection result with Gemini analysis
+        detection = Detection(
+            damage_type=gemini_result.damage_type,
+            confidence=gemini_result.confidence_score,  # Use confidence score from Gemini
+            severity=severity_level,
+            explanation=gemini_result.explanation,
+        )
+        
+        # Step 4: Additional protocol compliance check (if LLM available)
+        protocol_followed = True
+        protocol_reason = ""
+        if llm_service:
+            try:
+                protocol_result = await llm_service.check_protocol_compliance(
+                    complaint_text, gemini_result.damage_type, location
+                )
+                protocol_followed = protocol_result.follows_protocol
+                protocol_reason = protocol_result.explanation
+            except Exception as e:
+                logger.warning(f"Protocol check failed: {e}")
+        
+        # Step 5: Department recommendation
+        suggested_department = ""
+        if llm_service:
+            try:
+                department_result = await llm_service.recommend_department(
+                    gemini_result.damage_type, severity_level, complaint_text, location
+                )
+                suggested_department = department_result.department
+            except Exception as e:
+                logger.warning(f"Department recommendation failed: {e}")
+        else:
+            suggested_department = _suggest_department(gemini_result.damage_type, severity_level)
+        
+        # Step 6: Response time recommendation based on priority
+        response_time_map = {
+            "critical": "Within 4 hours",
+            "high": "Within 24 hours",
+            "medium": "Within 3 business days",
+            "low": "Within 7 business days",
+        }
+        recommended_response_time = response_time_map.get(priority, "Within 3-5 business days")
+        
+        # Step 7: Duplicate check (if embedding service available)
+        duplicate_result = None
+        if embedding_service and complaint_text:
+            try:
+                duplicate_result = await embedding_service.check_duplicate(
+                    complaint_text, gemini_result.damage_type, location
+                )
+            except Exception as e:
+                logger.warning(f"Duplicate check failed: {e}")
+        
+        # Generate explanation with severity percentage
+        explanation = (
+            f"Gemini AI Analysis: {gemini_result.damage_type.replace('_', ' ')} detected with "
+            f"{severity_percentage:.0f}% severity. "
+            f"Priority: {priority.upper()}. "
+            f"Severity Level: {severity_level}. "
+            f"Confidence: {gemini_result.confidence_score * 100:.0f}%. "
+            f"Recommended Action: {gemini_result.recommended_action}. "
+            f"{gemini_result.explanation}"
+        )
+        
+        return AnalysisResult(
+            accepted=True,
+            is_road_damage=True,
+            detections=[detection],
+            explanation=explanation,
+            model_used="gemini_api",
+            protocol_followed=protocol_followed,
+            protocol_reason=protocol_reason,
+            suggested_department=suggested_department,
+            recommended_response_time=recommended_response_time,
+            duplicate_check={
+                "is_duplicate": duplicate_result.is_duplicate if duplicate_result else False,
+                "similarity_score": duplicate_result.similarity_score if duplicate_result else 0.0,
+                "existing_id": duplicate_result.existing_report_id if duplicate_result else None
+            } if duplicate_result else None
+        )
+        
+    except Exception as e:
+        logger.error(f"Gemini analysis failed: {e}")
+        # Fallback to regular AI services or heuristics
+        if vision_service and llm_service:
+            return await _analyze_with_ai_services(
+                file_bytes, filename, complaint_text, location,
+                vision_service, llm_service, embedding_service
+            )
+        return _analyze_with_heuristics(file_bytes, filename, complaint_text, location)
 
 
 async def _analyze_with_ai_services(

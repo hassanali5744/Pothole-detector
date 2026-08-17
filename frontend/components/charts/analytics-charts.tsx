@@ -16,11 +16,20 @@ import {
   Legend,
 } from "recharts";
 import type { AnalyticsData } from "@/lib/types";
-import { DAMAGE_TYPE_LABELS } from "@/lib/constants";
+import { DAMAGE_TYPE_LABELS, SEVERITY_LABELS } from "@/lib/constants";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 
 const COLORS = ["#1e3a5f", "#b87333", "#2f5d47", "#7c4b1f", "#2c5282"];
-const SEVERITY_COLORS = ["#7a7268", "#b87333", "#c17f3a", "#9b2c2c"];
+
+function getSeverityColor(severity: string): string {
+  const colorMap: Record<string, string> = {
+    low: "#7a7268",
+    medium: "#b87333", 
+    high: "#c17f3a",
+    critical: "#9b2c2c"
+  };
+  return colorMap[severity] || "#7a7268";
+}
 
 interface AnalyticsChartsProps {
   data: AnalyticsData;
@@ -40,8 +49,9 @@ export function AnalyticsCharts({ data }: AnalyticsChartsProps) {
   }));
 
   const severityData = data.severityDistribution.map((d) => ({
-    name: d.severity.charAt(0).toUpperCase() + d.severity.slice(1),
+    name: SEVERITY_LABELS[d.severity as keyof typeof SEVERITY_LABELS] || d.severity,
     value: d.count,
+    color: getSeverityColor(d.severity),
   }));
 
   return (
@@ -82,8 +92,8 @@ export function AnalyticsCharts({ data }: AnalyticsChartsProps) {
                   `${name} ${((percent ?? 0) * 100).toFixed(0)}%`
                 }
               >
-                {severityData.map((_, i) => (
-                  <Cell key={i} fill={SEVERITY_COLORS[i % SEVERITY_COLORS.length]} />
+                {severityData.map((entry, i) => (
+                  <Cell key={i} fill={entry.color} />
                 ))}
               </Pie>
               <Tooltip contentStyle={tooltipStyle} />

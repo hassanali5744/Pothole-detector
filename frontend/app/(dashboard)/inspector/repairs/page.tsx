@@ -9,7 +9,7 @@ import { Input } from "@/components/ui/input";
 import { Select } from "@/components/ui/select";
 import { StatusBadge } from "@/components/ui/badge";
 import { Card, CardContent } from "@/components/ui/card";
-import { DAMAGE_TYPE_LABELS } from "@/lib/constants";
+import { DAMAGE_TYPE_LABELS, STATUS_LABELS, STATUS_FLOW } from "@/lib/constants";
 import { formatDate } from "@/lib/utils";
 import { apiClient } from "@/lib/api-client";
 import { mapReports } from "@/lib/mappers";
@@ -120,9 +120,9 @@ export default function RepairsPage() {
         )}
 
         <div className="flex flex-wrap items-center gap-2 rounded-xl border border-line bg-surface p-5 text-sm">
-          {["Reported", "Verified", "Assigned", "In Progress", "Completed"].map((s, i, arr) => (
-            <span key={s} className="flex items-center gap-2">
-              <span className="rounded-full bg-brand-800 px-3.5 py-1.5 font-semibold text-accent-100">{s}</span>
+          {STATUS_FLOW.map((status, i, arr) => (
+            <span key={status} className="flex items-center gap-2">
+              <span className="rounded-full bg-brand-800 px-3.5 py-1.5 font-semibold text-accent-100">{STATUS_LABELS[status]}</span>
               {i < arr.length - 1 && <span className="text-line-strong">→</span>}
             </span>
           ))}

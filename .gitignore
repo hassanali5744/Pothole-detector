@@ -4,10 +4,27 @@ backend/__pycache__/
 **/__pycache__/
 *.py[cod]
 *.egg-info/
+
+# Environment files
 .env
-.env.*
+.env.local
+.env.*.local
+backend/.env
+frontend/.env
+
+# Allow environment examples
+!.env.example
+!backend/.env.example
+!frontend/.env.example
+
+# Allow setup scripts
+!setup-env.bat
+!start.bat
+!stop.bat
 
 # Node / Next.js
+node_modules/
+package-lock.json
 frontend/node_modules/
 frontend/.next/
 frontend/out/

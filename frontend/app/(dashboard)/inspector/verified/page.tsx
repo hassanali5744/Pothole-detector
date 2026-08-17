@@ -8,6 +8,7 @@ import { Loader2 } from "lucide-react";
 import { apiClient } from "@/lib/api-client";
 import { mapReports } from "@/lib/mappers";
 import type { DamageReport } from "@/lib/types";
+import { SlideInUp, FadeIn, StaggerChildren, HoverLift } from "@/components/animations";
 
 export default function VerifiedReportsPage() {
   const [reports, setReports] = useState<DamageReport[]>([]);
@@ -38,23 +39,29 @@ export default function VerifiedReportsPage() {
 
   return (
     <RoleGuard allowedRoles={["inspector"]}>
-      <div className="space-y-6">
-        <PageHeader
-          title="Verified Reports"
-          description="Reports that have been reviewed and approved by inspectors."
-        />
-        {loading ? (
-          <div className="flex h-32 items-center justify-center">
-            <Loader2 className="h-8 w-8 animate-spin text-accent-600" />
-          </div>
-        ) : (
-          <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-            {reports.map((report) => (
-              <ReportCard key={report.id} report={report} showUser />
-            ))}
-          </div>
-        )}
-      </div>
+      <SlideInUp duration={0.5}>
+        <div className="space-y-6">
+          <FadeIn duration={0.6}>
+            <PageHeader
+              title="Verified Reports"
+              description="Reports that have been reviewed and approved by inspectors."
+            />
+          </FadeIn>
+          {loading ? (
+            <div className="flex h-32 items-center justify-center">
+              <Loader2 className="h-8 w-8 animate-spin text-accent-600" />
+            </div>
+          ) : (
+            <StaggerChildren staggerDelay={0.08} className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+              {reports.map((report) => (
+                <HoverLift key={report.id}>
+                  <ReportCard report={report} showUser showPriority />
+                </HoverLift>
+              ))}
+            </StaggerChildren>
+          )}
+        </div>
+      </SlideInUp>
     </RoleGuard>
   );
 }
